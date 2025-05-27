@@ -6,6 +6,10 @@ const InventoryCharts = dynamic(() => import("@/app/components/InventoryCharts")
   ssr: false,
 });
 
+const PieAnalytics = dynamic(() => import("@/app/components/PieAnalytics"), {
+  ssr: false,
+});
+
 export default function InventoryDashboard() {
   const pieData = [
     { id: 0, value: 40, color: "#00BCD4" },
@@ -31,6 +35,7 @@ export default function InventoryDashboard() {
           Company Inventory Overview
         </h1>
         <InventoryCharts pieData={pieData} lineData={lineData} />
+        <PieAnalytics pieData={pieData}/>
       </div>
     </div>
   );
