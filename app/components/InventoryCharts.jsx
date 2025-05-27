@@ -12,7 +12,6 @@ export default function InventoryCharts({ lineData }) {
   return (
     <>
       <div className="grid grid-cols-3 gap-6 w-300 mx-auto">
-        {/* Company User Count Card */}
         <div className="bg-white border border-[#2D2D2D]/25 rounded-lg p-6 flex flex-col justify-between">
           <div>
             <p className="font-regular text-[#333333] text-[14px] mb-1">
@@ -57,7 +56,6 @@ export default function InventoryCharts({ lineData }) {
           />
         </div>
 
-        {/* Most Stocked Products Card */}
         <div className="bg-white p-6 border border-[#2D2D2D]/25 rounded-lg text-center flex flex-col justify-between">
           <div>
             <p className="font-regular text-[14px] text-[#3d3d3d] mb-1">
@@ -72,7 +70,6 @@ export default function InventoryCharts({ lineData }) {
           </div>
         </div>
 
-        {/* Active Suppliers Card */}
         <div className="bg-white p-6 border border-[#2D2D2D]/25 rounded-lg flex flex-col justify-between">
           <div>
             <p className="font-regular text-[#333333] text-[14px]">
