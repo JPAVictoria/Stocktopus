@@ -20,7 +20,7 @@ export default function InventoryDashboard() {
         data: ["Day 1", "Day 5", "Day 10", "Day 15", "Day 20", "Day 25", "Day 30"],
       },
     ],
-    series: [{ data: [4, 6, 8, 12, 15, 18, 20] }],
+    series: [{ data: [4, 6, 8, 12, 15, 18, 20]}],
   };
 
   return (
