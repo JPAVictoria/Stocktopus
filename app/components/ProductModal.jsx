@@ -12,26 +12,31 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-export default function LocationModal({ open, onClose, onSubmit }) {
-  const [location, setLocation] = useState("");
-  const [address, setAddress] = useState("");
+export default function ProductModal({ open, onClose, onSubmit }) {
+  const [name, setName] = useState("");
+  const [image, setImage] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [price, setPrice] = useState("");
 
-  
   useEffect(() => {
     if (!open) {
-      setLocation("");
-      setAddress("");
+      setName("");
+      setImage("");
+      setQuantity("");
+      setPrice("");
     }
   }, [open]);
 
   const handleClear = () => {
-    setLocation("");
-    setAddress("");
+    setName("");
+    setImage("");
+    setQuantity("");
+    setPrice("");
   };
 
   const handleSubmit = () => {
-    if (!location.trim() || !address.trim()) return;
-    onSubmit({ location, address });
+    if (!name.trim() || !image.trim() || !quantity || !price) return;
+    onSubmit({ name, image, quantity, price });
     handleClear();
     onClose();
   };
@@ -55,14 +60,19 @@ export default function LocationModal({ open, onClose, onSubmit }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          fontWeight: 600, 
+          fontWeight: 600,
           fontSize: "1rem",
           py: 1.5,
           px: 2,
         }}
       >
-        Add New Location
-        <IconButton onClick={onClose} size="small" aria-label="close" sx={{ color: "#ffffff" }}>
+        Add New Product
+        <IconButton
+          onClick={onClose}
+          size="small"
+          aria-label="close"
+          sx={{ color: "#ffffff" }}
+        >
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
@@ -70,43 +80,70 @@ export default function LocationModal({ open, onClose, onSubmit }) {
       <DialogContent dividers sx={{ px: 2.5, py: 2.5 }}>
         <TextField
           fullWidth
-          label="Location Name"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          label="Product Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           margin="dense"
           size="small"
           sx={{ mt: 1 }}
           InputLabelProps={{
-            style: {
-              color: "#333333",
-              fontSize: "15px",
-            },
+            style: { color: "#333333", fontSize: "14px" },
           }}
           InputProps={{
-            style: {
-              color: "#333333",
-            },
+            style: { color: "#333333" },
           }}
         />
 
         <TextField
           fullWidth
-          label="Address"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
+          label="Image URL"
+          value={image}
+          onChange={(e) => setImage(e.target.value)}
           margin="dense"
           size="small"
-          sx={{ mt: 3 }}
+          sx={{ mt: 2 }}
           InputLabelProps={{
-            style: {
-              color: "#333333",
-              fontSize: "15px"
-            },
+            style: { color: "#333333", fontSize: "14px" },
           }}
           InputProps={{
-            style: {
-              color: "#333333",
-            },
+            style: { color: "#333333" },
+          }}
+        />
+
+        <TextField
+          fullWidth
+          label="Quantity"
+          type="number"
+          value={quantity}
+          onChange={(e) => setQuantity(e.target.value)}
+          margin="dense"
+          size="small"
+          sx={{ mt: 2 }}
+          InputLabelProps={{
+            style: { color: "#333333", fontSize: "14px" },
+          }}
+          InputProps={{
+            style: { color: "#333333" },
+            inputProps: { min: 0 }, 
+          }}
+        />
+
+        <TextField
+          fullWidth
+          label="Price"
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          margin="dense"
+          size="small"
+          sx={{ mt: 2 }}
+          InputLabelProps={{
+            style: { color: "#333333", fontSize: "14px" },
+          }}
+          InputProps={{
+            style: { color: "#333333" },
+            inputProps: { min: 0 }, 
+
           }}
         />
       </DialogContent>

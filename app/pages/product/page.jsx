@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { SquarePlus, Minus, MoveRight, Plus } from "lucide-react";
 import Image from "next/image";
 import Navbar from "@/app/components/Navbar";
+import ProductModal from "@/app/components/ProductModal";
 
 const columns = [
   {
@@ -43,7 +45,6 @@ const columns = [
     headerName: "Inventory Location",
     headerAlign: "center",
     align: "center",
-
     flex: 1,
     renderCell: (params) => (
       <div className="text-[#333333] flex items-center h-full">
@@ -124,10 +125,11 @@ const rows = [
     location: "Muntinlupa",
     srp: "999.99",
   },
-
 ];
 
 export default function ProductOverview() {
+  const [modalOpen, setModalOpen] = useState(false);
+
   return (
     <div className="p-8 min-h-screen">
       <Navbar />
@@ -138,8 +140,8 @@ export default function ProductOverview() {
             Product Inventory
           </h2>
           <button
-            className="flex flex-col items-center text-sm text-[#333333] cursor-pointer  hover:bg-gray-200 rounded-md 
-            transition-colors duration-200 px-4 py-2"
+            onClick={() => setModalOpen(true)}
+            className="flex flex-col items-center text-sm text-[#333333] cursor-pointer hover:bg-gray-200 rounded-md transition-colors duration-200 px-4 py-2"
           >
             <SquarePlus size={20} className="mb-1" />
             <span>Add product</span>
@@ -174,6 +176,12 @@ export default function ProductOverview() {
           }}
         />
       </div>
+
+      <ProductModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={() => {}}
+      />
     </div>
   );
 }
