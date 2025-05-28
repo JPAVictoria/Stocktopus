@@ -12,7 +12,7 @@ import {
 
 export default function Navbar() {
   const iconClasses =
-    'text-[#333333] hover:text-[#0056B3] transition-colors duration-300 w-6 h-6 cursor-pointer';
+    'text-[#333333] hover:text-[#ffa408] transition-colors duration-300 w-6 h-6 cursor-pointer';
 
   return (
     <div className="fixed top-1/2 left-10 -translate-y-1/2 h-[380px] w-15 bg-white border border-[#2D2D2D]/25 rounded-lg flex flex-col justify-between items-center py-12">

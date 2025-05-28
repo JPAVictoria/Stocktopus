@@ -31,7 +31,7 @@ export default function InventoryDashboard() {
     <div className="flex bg-[#f7f9fc] min-h-screen text-[#3d3d3d]">
       <Navbar />
       <div className="flex-1 ml-[80px] p-8">
-        <h1 className="text-xl font-semibold text-center mb-10 mt-12">
+        <h1 className="text-xl font-bold text-center mb-10 mt-12">
           Company Inventory Overview
         </h1>
         <InventoryCharts pieData={pieData} lineData={lineData} />

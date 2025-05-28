@@ -1,10 +1,11 @@
 "use client";
 
-import * as React from "react";
+import React, { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { SquarePlus, Trash2, Pen } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import { Chip } from "@mui/material";
+import LocationModal from "@/app/components/LocationModal"; 
 
 const columns = [
   {
@@ -20,24 +21,22 @@ const columns = [
     headerAlign: "center",
     align: "center",
     flex: 0.8,
-    renderCell: (params) => {
-      return (
-        <div className="flex items-center gap-2">
-          <span>{params.value}</span>
-          <Chip
-            label="20"
-            size="small"
-            sx={{
-              backgroundColor: "rgba(34,197,94,0.2)",
-              color: "rgb(34, 197, 94)",
-              fontWeight: 500,
-              fontSize: "0.75rem",
-              height: "20px",
-            }}
-          />
-        </div>
-      );
-    },
+    renderCell: (params) => (
+      <div className="flex items-center gap-2">
+        <span>{params.value}</span>
+        <Chip
+          label="20"
+          size="small"
+          sx={{
+            backgroundColor: "rgba(34,197,94,0.2)",
+            color: "rgb(34, 197, 94)",
+            fontWeight: 500,
+            fontSize: "0.75rem",
+            height: "20px",
+          }}
+        />
+      </div>
+    ),
   },
   {
     field: "address",
@@ -110,6 +109,8 @@ const rows = [
 ];
 
 export default function InventoryLocations() {
+  const [openModal, setOpenModal] = useState(false);
+
   return (
     <div className="p-8 min-h-screen">
       <Navbar />
@@ -120,8 +121,9 @@ export default function InventoryLocations() {
             Inventory Location
           </h2>
           <button
-            className="flex flex-col items-center text-sm text-[#333333] cursor-pointer  hover:bg-gray-200 rounded-md 
-            transition-colors duration-200 px-4 py-2"
+            className="flex flex-col items-center text-sm text-[#333333] cursor-pointer hover:bg-gray-200 rounded-md 
+              transition-colors duration-200 px-4 py-2"
+            onClick={() => setOpenModal(true)}
           >
             <SquarePlus size={20} className="mb-1" />
             <span>Add location</span>
@@ -156,6 +158,12 @@ export default function InventoryLocations() {
           }}
         />
       </div>
+
+      <LocationModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        onSubmit={() => {}}
+      />
     </div>
   );
 }
