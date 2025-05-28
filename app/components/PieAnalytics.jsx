@@ -3,7 +3,7 @@ import { PieChart } from "@mui/x-charts";
 
 export default function PieAnalytics({ pieData }) {
   return (
-    <div className="grid grid-cols-2 gap-45 w-[1200px] mt-10 mx-auto">
+    <div className="grid grid-cols-2 gap-25 w-[1200px] mt-10 mx-auto">
       <div className="bg-white p-10 border border-[#2D2D2D]/25 rounded-lg text-center">
         <p className="font-semibold mb-4 text-[#3d3d3d] text-lg">All-Time Inventory Breakdown</p>
         <PieChart
