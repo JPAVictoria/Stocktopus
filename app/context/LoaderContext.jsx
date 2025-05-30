@@ -26,7 +26,7 @@ export const LoadingProvider = ({ children }) => {
             left: 0,
             width: '100vw',
             height: '100vh',
-            backgroundColor: 'rgba(251, 251, 254, 0.5)',
+            backgroundColor: 'rgba(255, 255, 255, 1)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
