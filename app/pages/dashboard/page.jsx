@@ -1,6 +1,8 @@
 "use client";
 import Navbar from "@/app/components/Navbar";
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
+import { useLoading } from "@/app/context/LoaderContext";
 
 const InventoryCharts = dynamic(() => import("@/app/components/InventoryCharts"), {
   ssr: false,
@@ -11,6 +13,13 @@ const PieAnalytics = dynamic(() => import("@/app/components/PieAnalytics"), {
 });
 
 export default function InventoryDashboard() {
+  
+  const { loading, setLoading } = useLoading();
+
+    useEffect(() => {
+      setLoading(false);
+    }, [setLoading]);
+
   const pieData = [
     { id: 0, value: 40, color: "#00BCD4" },
     { id: 1, value: 30, color: "#9C27B0" },

@@ -1,5 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { LoadingProvider } from "@/app/context/LoaderContext";
+import { SnackbarProvider } from "@/app/context/SnackbarContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -11,7 +13,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        {children}
+        <LoadingProvider>
+          <SnackbarProvider>
+            {children}
+          </SnackbarProvider>
+        </LoadingProvider>
       </body>
     </html>
   );
