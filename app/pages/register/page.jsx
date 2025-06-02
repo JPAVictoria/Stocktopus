@@ -105,7 +105,8 @@ export default function Register() {
           priority
         />
       </div>
-
+ 
+ 
       <div className="w-1/2 flex items-center justify-center bg-white border border-gray-200 rounded-md shadow-sm">
         <form
           onSubmit={handleSubmit}
