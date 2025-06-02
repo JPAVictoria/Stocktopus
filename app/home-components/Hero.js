@@ -69,7 +69,7 @@ export default function Hero() {
                 }),
               })}
             >
-              Brave
+              Stocktopus
             </Typography>
           </Typography>
           <Typography
