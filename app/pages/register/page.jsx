@@ -223,7 +223,11 @@ export default function Register() {
 
           <div className="mt-7 text-center text-sm">
             <p className="text-gray-600 mb-2">Remember your account?</p>
-            <Link href="/pages/login">
+            <Link
+              href="/pages/login"
+              onClick={(e) => submitting && e.preventDefault()}
+              className={submitting ? "pointer-events-none opacity-50" : ""}
+            >
               <span className="text-orange-500 hover:underline cursor-pointer">
                 Back to login
               </span>

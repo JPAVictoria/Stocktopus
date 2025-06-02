@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import { Mail, Eye, EyeOff } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useLoading } from '@/app/context/LoaderContext';
-import { useSnackbar } from '@/app/context/SnackbarContext';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { Mail, Eye, EyeOff } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import Image from "next/image";
+import { useLoading } from "@/app/context/LoaderContext";
+import { useSnackbar } from "@/app/context/SnackbarContext";
 
 export default function Login() {
   const router = useRouter();
   const { loading, setLoading } = useLoading();
   const { openSnackbar } = useSnackbar();
 
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -33,29 +33,29 @@ export default function Login() {
     e.preventDefault();
 
     if (!form.email || !form.password) {
-      openSnackbar('Please fill in both email and password fields.', 'info');
+      openSnackbar("Please fill in both email and password fields.", "info");
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const response = await axios.post('/api/login', form, {
-        headers: { 'Content-Type': 'application/json' },
+      const response = await axios.post("/api/login", form, {
+        headers: { "Content-Type": "application/json" },
       });
 
-      openSnackbar('Login successful! Redirecting...', 'success');
+      openSnackbar("Login successful! Redirecting...", "success");
       await new Promise((res) => setTimeout(res, 1000));
 
       setLoading(true);
       await new Promise((res) => setTimeout(res, 500));
 
-      router.push('/pages/dashboard');
+      router.push("/pages/dashboard");
     } catch (err) {
-      const msg = err?.response?.data?.message || '';
+      const msg = err?.response?.data?.message || "";
 
       if (msg) {
-        openSnackbar('Login failed. Please check your credentials.', 'error');
+        openSnackbar("Login failed. Please check your credentials.", "error");
       }
     } finally {
       setSubmitting(false);
@@ -139,7 +139,7 @@ export default function Login() {
             <Input
               id="password"
               name="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={form.password}
               onChange={handleChange}
               placeholder="********"
@@ -150,7 +150,7 @@ export default function Login() {
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute top-[35px] right-3 text-gray-400 hover:text-gray-700 transition"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={showPassword ? "Hide password" : "Show password"}
               tabIndex={-1}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -162,12 +162,16 @@ export default function Login() {
             disabled={submitting}
             className="w-full bg-gradient-to-r from-[#FFA408] to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white cursor-pointer transition-all duration-300 ease-in-out"
           >
-            {submitting ? 'Logging in...' : 'Login'}
+            {submitting ? "Logging in..." : "Login"}
           </Button>
 
           <div className="mt-7 text-center text-sm">
             <p className="text-gray-600 mb-2">Don’t have an account yet?</p>
-            <Link href="/pages/register">
+            <Link
+              href="/pages/register"
+              onClick={(e) => submitting && e.preventDefault()}
+              className={submitting ? "pointer-events-none opacity-50" : ""}
+            >
               <span className="text-orange-500 hover:underline cursor-pointer">
                 Get started here
               </span>
