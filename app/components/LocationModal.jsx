@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Dialog,
   DialogTitle,
@@ -9,37 +10,66 @@ import {
   TextField,
   Button,
   IconButton,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-export default function LocationModal({ open, onClose, onSubmit }) {
+export default function LocationModal({ open, onClose, onSuccess }) {
   const [location, setLocation] = useState("");
   const [address, setAddress] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   
   useEffect(() => {
     if (!open) {
       setLocation("");
       setAddress("");
+      setError("");
+      setLoading(false);
     }
   }, [open]);
 
   const handleClear = () => {
     setLocation("");
     setAddress("");
+    setError("");
   };
 
-  const handleSubmit = () => {
-    if (!location.trim() || !address.trim()) return;
-    onSubmit({ location, address });
-    handleClear();
-    onClose();
+  const handleSubmit = async () => {
+    if (!location.trim() || !address.trim()) {
+      setError("Both Location Name and Address are required.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      await axios.post("/api/inventory", { location: location.trim(), address: address.trim() });
+
+      
+      if (onSuccess) onSuccess();
+
+      handleClear();
+      onClose();
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.response?.data || "Failed to create location. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        if (!loading) onClose();
+      }}
       maxWidth="xs"
       fullWidth
       PaperProps={{
@@ -55,19 +85,33 @@ export default function LocationModal({ open, onClose, onSubmit }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          fontWeight: 600, 
+          fontWeight: 600,
           fontSize: "1rem",
           py: 1.5,
           px: 2,
         }}
       >
         Add New Location
-        <IconButton onClick={onClose} size="small" aria-label="close" sx={{ color: "#ffffff" }}>
+        <IconButton
+          onClick={() => {
+            if (!loading) onClose();
+          }}
+          size="small"
+          aria-label="close"
+          sx={{ color: "#ffffff" }}
+          disabled={loading}
+        >
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
       <DialogContent dividers sx={{ px: 2.5, py: 2.5 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
         <TextField
           fullWidth
           label="Location Name"
@@ -75,6 +119,7 @@ export default function LocationModal({ open, onClose, onSubmit }) {
           onChange={(e) => setLocation(e.target.value)}
           margin="dense"
           size="small"
+          disabled={loading}
           sx={{ mt: 1 }}
           InputLabelProps={{
             style: {
@@ -96,11 +141,12 @@ export default function LocationModal({ open, onClose, onSubmit }) {
           onChange={(e) => setAddress(e.target.value)}
           margin="dense"
           size="small"
+          disabled={loading}
           sx={{ mt: 3 }}
           InputLabelProps={{
             style: {
               color: "#333333",
-              fontSize: "15px"
+              fontSize: "15px",
             },
           }}
           InputProps={{
@@ -125,9 +171,11 @@ export default function LocationModal({ open, onClose, onSubmit }) {
             py: 0.5,
             borderRadius: "8px",
           }}
+          disabled={loading}
         >
           Clear
         </Button>
+
         <Button
           onClick={handleSubmit}
           variant="contained"
@@ -143,9 +191,16 @@ export default function LocationModal({ open, onClose, onSubmit }) {
             "&:hover": {
               backgroundColor: "#e69906",
             },
+            position: "relative",
+            minWidth: "80px",
           }}
+          disabled={loading}
         >
-          Submit
+          {loading ? (
+            <CircularProgress size={20} sx={{ color: "white" }} />
+          ) : (
+            "Submit"
+          )}
         </Button>
       </DialogActions>
     </Dialog>

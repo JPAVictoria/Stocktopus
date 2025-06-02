@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import { SquarePlus, Trash2, Pen } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import { Chip } from "@mui/material";
-import LocationModal from "@/app/components/LocationModal"; 
+import LocationModal from "@/app/components/LocationModal";
 
 const columns = [
   {
@@ -25,7 +26,7 @@ const columns = [
       <div className="flex items-center gap-2">
         <span>{params.value}</span>
         <Chip
-          label="20"
+          label={params.row.productCount}
           size="small"
           sx={{
             backgroundColor: "rgba(34,197,94,0.2)",
@@ -98,18 +99,26 @@ const columns = [
   },
 ];
 
-const rows = [
-  {
-    id: 1,
-    location: "Muntinlupa",
-    products: "Egg",
-    address: "South cotabato",
-    createdDate: "August 29, 2004 10:52:24 PM",
-  },
-];
-
 export default function InventoryLocations() {
+  const [rows, setRows] = useState([]);
   const [openModal, setOpenModal] = useState(false);
+  const [loading, setLoading] = useState(false); 
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      setLoading(true); 
+      try {
+        const res = await axios.get("/api/inventory");
+        setRows(res.data);
+      } catch (error) {
+        console.error("Failed to fetch locations:", error);
+      } finally {
+        setLoading(false); 
+      }
+    };
+
+    fetchLocations();
+  }, []);
 
   return (
     <div className="p-8 min-h-screen">
@@ -117,12 +126,9 @@ export default function InventoryLocations() {
 
       <div className="mx-auto max-w-6xl">
         <div className="flex justify-between items-center mb-4 mt-15">
-          <h2 className="text-2xl font-semibold text-[#333333]">
-            Inventory Location
-          </h2>
+          <h2 className="text-2xl font-semibold text-[#333333]">Inventory Location</h2>
           <button
-            className="flex flex-col items-center text-sm text-[#333333] cursor-pointer hover:bg-gray-200 rounded-md 
-              transition-colors duration-200 px-4 py-2"
+            className="flex flex-col items-center text-sm text-[#333333] cursor-pointer hover:bg-gray-200 rounded-md transition-colors duration-200 px-4 py-2"
             onClick={() => setOpenModal(true)}
           >
             <SquarePlus size={20} className="mb-1" />
@@ -135,6 +141,7 @@ export default function InventoryLocations() {
           columns={columns}
           rowHeight={80}
           pageSizeOptions={[5, 10]}
+          loading={loading} 
           initialState={{
             pagination: {
               paginationModel: { pageSize: 5, page: 0 },
@@ -159,11 +166,7 @@ export default function InventoryLocations() {
         />
       </div>
 
-      <LocationModal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        onSubmit={() => {}}
-      />
+      <LocationModal open={openModal} onClose={() => setOpenModal(false)} onSubmit={() => {}} />
     </div>
   );
 }
