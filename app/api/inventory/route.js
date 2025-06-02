@@ -54,3 +54,26 @@ export async function POST(req) {
     return new Response("Failed to create location", { status: 500 });
   }
 }
+
+export async function PUT(req) {
+  try {
+    const body = await req.json();
+    const { id } = body;
+
+    if (!id) {
+      return new Response("Missing location id", { status: 400 });
+    }
+
+    await prisma.location.update({
+      where: { id },  
+      data: { deleted: true },
+    });
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.error("PUT error:", error);
+    return new Response("Failed to soft delete location", { status: 500 });
+  }
+}
+
+

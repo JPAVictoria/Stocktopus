@@ -11,22 +11,21 @@ import {
   Button,
   IconButton,
   CircularProgress,
-  Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useSnackbar } from "@/app/context/SnackbarContext";
 
-export default function LocationModal({ open, onClose, onSuccess }) {
+export default function LocationModal({ open, onClose, onSuccess, existingLocations = [] }) {
   const [location, setLocation] = useState("");
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  
+  const { openSnackbar } = useSnackbar();
+
   useEffect(() => {
     if (!open) {
       setLocation("");
       setAddress("");
-      setError("");
       setLoading(false);
     }
   }, [open]);
@@ -34,31 +33,41 @@ export default function LocationModal({ open, onClose, onSuccess }) {
   const handleClear = () => {
     setLocation("");
     setAddress("");
-    setError("");
   };
 
   const handleSubmit = async () => {
-    if (!location.trim() || !address.trim()) {
-      setError("Both Location Name and Address are required.");
+    const trimmedLocation = location.trim();
+    const trimmedAddress = address.trim();
+
+    if (!trimmedLocation || !trimmedAddress) {
+      openSnackbar("Please fill in all input fields.", "error");
+      return;
+    }
+
+    const duplicate = existingLocations.some(
+      (loc) => loc.location.toLowerCase() === trimmedLocation.toLowerCase()
+    );
+
+    if (duplicate) {
+      openSnackbar("Location name must be unique. This name already exists.", "error");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
-      await axios.post("/api/inventory", { location: location.trim(), address: address.trim() });
+      await axios.post("/api/inventory", { location: trimmedLocation, address: trimmedAddress });
 
-      
+      openSnackbar("Location added successfully.", "success");
+
       if (onSuccess) onSuccess();
 
       handleClear();
       onClose();
     } catch (err) {
       console.error(err);
-      setError(
-        err.response?.data || "Failed to create location. Please try again."
-      );
+      const message = err.response?.data || "Failed to create location. Please try again.";
+      openSnackbar(message, "error");
     } finally {
       setLoading(false);
     }
@@ -106,12 +115,6 @@ export default function LocationModal({ open, onClose, onSuccess }) {
       </DialogTitle>
 
       <DialogContent dividers sx={{ px: 2.5, py: 2.5 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
         <TextField
           fullWidth
           label="Location Name"
