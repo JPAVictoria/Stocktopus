@@ -20,6 +20,7 @@ import { useSnackbar } from "@/app/context/SnackbarContext";
 export default function InventoryLocations() {
   const [rows, setRows] = useState([]);
   const [openModal, setOpenModal] = useState(false);
+  const [initialEditData, setInitialEditData] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -59,9 +60,11 @@ export default function InventoryLocations() {
   const handleSoftDelete = useCallback(async () => {
     if (!deletingId) return;
     setDeleting(true);
-
     try {
-      await axios.put("/api/inventory", { id: deletingId });
+      await axios.put("/api/inventory", {
+        id: deletingId,
+        softDelete: true,
+      });
       setRows((prevRows) => prevRows.filter((r) => r.id !== deletingId));
       openSnackbar("Location deleted successfully.", "success");
       setConfirmOpen(false);
@@ -73,6 +76,16 @@ export default function InventoryLocations() {
       setDeleting(false);
     }
   }, [deletingId, openSnackbar]);
+
+  const handleEdit = (row) => {
+    setInitialEditData(row);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setInitialEditData(null);
+  };
 
   const columns = [
     {
@@ -147,7 +160,10 @@ export default function InventoryLocations() {
 
         return (
           <div className="flex items-center gap-8">
-            <div className="flex flex-col items-center cursor-pointer text-green-600">
+            <div
+              className="flex flex-col items-center cursor-pointer text-green-600"
+              onClick={() => handleEdit(params.row)}
+            >
               <div style={iconWrapperStyle(colors.add)}>
                 <Pen size={22} />
               </div>
@@ -219,9 +235,10 @@ export default function InventoryLocations() {
 
       <LocationModal
         open={openModal}
-        onClose={() => setOpenModal(false)}
-        onSuccess={fetchLocations} 
-        existingLocations={rows} 
+        onClose={handleCloseModal}
+        onSuccess={fetchLocations}
+        existingLocations={rows}
+        initialData={initialEditData} // <-- send edit data or null
       />
 
       <Dialog

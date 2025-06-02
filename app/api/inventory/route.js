@@ -58,21 +58,37 @@ export async function POST(req) {
 export async function PUT(req) {
   try {
     const body = await req.json();
-    const { id } = body;
+    const { id, location, address, softDelete } = body;
 
     if (!id) {
       return new Response("Missing location id", { status: 400 });
     }
 
-    await prisma.location.update({
-      where: { id },  
-      data: { deleted: true },
+    if (softDelete) {
+      await prisma.location.update({
+        where: { id },
+        data: { deleted: true },
+      });
+
+      return new Response(null, { status: 204 });
+    }
+
+    if (!location || !address) {
+      return new Response("Missing location or address for update", { status: 400 });
+    }
+
+    const updatedLocation = await prisma.location.update({
+      where: { id },
+      data: {
+        name: location,
+        address,
+      },
     });
 
-    return new Response(null, { status: 204 });
+    return Response.json(updatedLocation);
   } catch (error) {
     console.error("PUT error:", error);
-    return new Response("Failed to soft delete location", { status: 500 });
+    return new Response("Failed to process request", { status: 500 });
   }
 }
 

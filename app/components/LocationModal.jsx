@@ -15,7 +15,15 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 
-export default function LocationModal({ open, onClose, onSuccess, existingLocations = [] }) {
+export default function LocationModal({
+  open,
+  onClose,
+  onSuccess,
+  existingLocations = [],
+  initialData = null, 
+}) {
+  const isEditMode = Boolean(initialData);
+
   const [location, setLocation] = useState("");
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,12 +31,17 @@ export default function LocationModal({ open, onClose, onSuccess, existingLocati
   const { openSnackbar } = useSnackbar();
 
   useEffect(() => {
-    if (!open) {
-      setLocation("");
-      setAddress("");
+    if (open) {
+      if (isEditMode) {
+        setLocation(initialData.location || "");
+        setAddress(initialData.address || "");
+      } else {
+        setLocation("");
+        setAddress("");
+      }
       setLoading(false);
     }
-  }, [open]);
+  }, [open, isEditMode, initialData]);
 
   const handleClear = () => {
     setLocation("");
@@ -44,9 +57,11 @@ export default function LocationModal({ open, onClose, onSuccess, existingLocati
       return;
     }
 
-    const duplicate = existingLocations.some(
-      (loc) => loc.location.toLowerCase() === trimmedLocation.toLowerCase()
-    );
+    const duplicate = existingLocations.some((loc) => {
+      const sameName = loc.location.toLowerCase() === trimmedLocation.toLowerCase();
+      const sameId = initialData?.id === loc.id;
+      return sameName && !sameId;
+    });
 
     if (duplicate) {
       openSnackbar("Location name must be unique. This name already exists.", "error");
@@ -56,17 +71,27 @@ export default function LocationModal({ open, onClose, onSuccess, existingLocati
     setLoading(true);
 
     try {
-      await axios.post("/api/inventory", { location: trimmedLocation, address: trimmedAddress });
-
-      openSnackbar("Location added successfully.", "success");
+      if (isEditMode) {
+        await axios.put("/api/inventory", {
+          id: initialData.id,
+          location: trimmedLocation,
+          address: trimmedAddress,
+        });
+        openSnackbar("Location updated successfully.", "success");
+      } else {
+        // POST for create
+        await axios.post("/api/inventory", {
+          location: trimmedLocation,
+          address: trimmedAddress,
+        });
+        openSnackbar("Location added successfully.", "success");
+      }
 
       if (onSuccess) onSuccess();
-
-      handleClear();
       onClose();
     } catch (err) {
       console.error(err);
-      const message = err.response?.data || "Failed to create location. Please try again.";
+      const message = err.response?.data || "Failed to save location. Please try again.";
       openSnackbar(message, "error");
     } finally {
       setLoading(false);
@@ -100,7 +125,7 @@ export default function LocationModal({ open, onClose, onSuccess, existingLocati
           px: 2,
         }}
       >
-        Add New Location
+        {isEditMode ? "Edit Location" : "Add New Location"}
         <IconButton
           onClick={() => {
             if (!loading) onClose();
@@ -161,23 +186,25 @@ export default function LocationModal({ open, onClose, onSuccess, existingLocati
       </DialogContent>
 
       <DialogActions sx={{ px: 2.5, py: 1.5 }}>
-        <Button
-          onClick={handleClear}
-          variant="outlined"
-          size="small"
-          sx={{
-            color: "#333333",
-            borderColor: "#333333",
-            textTransform: "none",
-            fontSize: "0.8rem",
-            px: 2,
-            py: 0.5,
-            borderRadius: "8px",
-          }}
-          disabled={loading}
-        >
-          Clear
-        </Button>
+        {!isEditMode && (
+          <Button
+            onClick={handleClear}
+            variant="outlined"
+            size="small"
+            sx={{
+              color: "#333333",
+              borderColor: "#333333",
+              textTransform: "none",
+              fontSize: "0.8rem",
+              px: 2,
+              py: 0.5,
+              borderRadius: "8px",
+            }}
+            disabled={loading}
+          >
+            Clear
+          </Button>
+        )}
 
         <Button
           onClick={handleSubmit}
@@ -201,6 +228,8 @@ export default function LocationModal({ open, onClose, onSuccess, existingLocati
         >
           {loading ? (
             <CircularProgress size={20} sx={{ color: "white" }} />
+          ) : isEditMode ? (
+            "Update"
           ) : (
             "Submit"
           )}
