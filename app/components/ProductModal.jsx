@@ -9,6 +9,11 @@ import {
   TextField,
   Button,
   IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  InputAdornment,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -17,6 +22,7 @@ export default function ProductModal({ open, onClose, onSubmit }) {
   const [image, setImage] = useState("");
   const [quantity, setQuantity] = useState("");
   const [price, setPrice] = useState("");
+  const [location, setLocation] = useState("");
 
   useEffect(() => {
     if (!open) {
@@ -24,6 +30,7 @@ export default function ProductModal({ open, onClose, onSubmit }) {
       setImage("");
       setQuantity("");
       setPrice("");
+      setLocation("");
     }
   }, [open]);
 
@@ -32,13 +39,20 @@ export default function ProductModal({ open, onClose, onSubmit }) {
     setImage("");
     setQuantity("");
     setPrice("");
+    setLocation("");
   };
 
   const handleSubmit = () => {
-    if (!name.trim() || !image.trim() || !quantity || !price) return;
-    onSubmit({ name, image, quantity, price });
+    if (!name.trim() || !image.trim() || !quantity || !price || !location)
+      return;
+    onSubmit({ name, image, quantity, price, location });
     handleClear();
     onClose();
+  };
+
+  const handleClearLocation = (e) => {
+    e.stopPropagation(); // prevent select dropdown from toggling
+    setLocation("");
   };
 
   return (
@@ -86,12 +100,8 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           margin="dense"
           size="small"
           sx={{ mt: 1 }}
-          InputLabelProps={{
-            style: { color: "#333333", fontSize: "14px" },
-          }}
-          InputProps={{
-            style: { color: "#333333" },
-          }}
+          InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
+          InputProps={{ style: { color: "#333333" } }}
         />
 
         <TextField
@@ -102,12 +112,8 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           margin="dense"
           size="small"
           sx={{ mt: 2 }}
-          InputLabelProps={{
-            style: { color: "#333333", fontSize: "14px" },
-          }}
-          InputProps={{
-            style: { color: "#333333" },
-          }}
+          InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
+          InputProps={{ style: { color: "#333333" } }}
         />
 
         <TextField
@@ -119,13 +125,8 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           margin="dense"
           size="small"
           sx={{ mt: 2 }}
-          InputLabelProps={{
-            style: { color: "#333333", fontSize: "14px" },
-          }}
-          InputProps={{
-            style: { color: "#333333" },
-            inputProps: { min: 0 }, 
-          }}
+          InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
+          InputProps={{ style: { color: "#333333" }, inputProps: { min: 0 } }}
         />
 
         <TextField
@@ -137,15 +138,45 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           margin="dense"
           size="small"
           sx={{ mt: 2 }}
-          InputLabelProps={{
-            style: { color: "#333333", fontSize: "14px" },
-          }}
-          InputProps={{
-            style: { color: "#333333" },
-            inputProps: { min: 0 }, 
-
-          }}
+          InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
+          InputProps={{ style: { color: "#333333" }, inputProps: { min: 0 } }}
         />
+
+        <FormControl fullWidth margin="dense" size="small" sx={{ mt: 2 }}>
+          <InputLabel
+            id="inventory-location-label"
+            sx={{ color: "#333333", fontSize: "14px" }}
+          >
+            Inventory Location
+          </InputLabel>
+          <Select
+            labelId="inventory-location-label"
+            id="inventory-location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            label="Inventory Location"
+            sx={{ color: "#333333" }}
+            endAdornment={
+              location && (
+                <IconButton
+                  size="small"
+                  onClick={() => setLocation("")}
+                  aria-label="Clear inventory location"
+                  sx={{ mr: 1, transform: "translateX(-4px)" }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              )
+            }
+          >
+            <MenuItem value="" disabled>
+              Select location
+            </MenuItem>
+            <MenuItem value="Warehouse A">Warehouse A</MenuItem>
+            <MenuItem value="Warehouse B">Warehouse B</MenuItem>
+            <MenuItem value="Storefront">Storefront</MenuItem>
+          </Select>
+        </FormControl>
       </DialogContent>
 
       <DialogActions sx={{ px: 2.5, py: 1.5 }}>
