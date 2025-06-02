@@ -69,7 +69,7 @@ export default function Hero() {
                 }),
               })}
             >
-              Foodopedia
+              Brave
             </Typography>
           </Typography>
           <Typography
