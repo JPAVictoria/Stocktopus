@@ -51,8 +51,24 @@ const scrollToSection = (id) => {
     >
       <Container maxWidth="md">
         <StyledToolbar variant="dense" disableGutters>
-          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
-            <Sitemark />
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', pl: 0, ml: -3 }}>
+            <Box
+              sx={{
+                height: 70, // keep toolbar height steady
+                overflow: 'visible',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <Box
+                sx={{
+                  transform: 'scale(1.5)', // enlarge the logo
+                  transformOrigin: 'center',
+                }}
+              >
+                <Sitemark />
+              </Box>
+            </Box>
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
               <Button variant="text" color="info" size="small" onClick={() => scrollToSection('feature')}>
                 Features
