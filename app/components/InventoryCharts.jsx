@@ -73,7 +73,7 @@ export default function InventoryCharts({ lineData }) {
         <div className="bg-white p-6 border border-[#2D2D2D]/25 rounded-lg flex flex-col justify-between">
           <div>
             <p className="font-regular text-[#333333] text-[14px]">
-              Active Suppliers:
+              Active Inventories:
             </p>
             <p className="text-lg text-[#333333] font-bold mb-1">20k</p>
             <p className="text-[#333333]/75 text-[12.5px] font-regular mb-5">
