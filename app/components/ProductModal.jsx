@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Dialog,
   DialogTitle,
@@ -13,7 +14,6 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  InputAdornment,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -23,18 +23,26 @@ export default function ProductModal({ open, onClose, onSubmit }) {
   const [quantity, setQuantity] = useState("");
   const [price, setPrice] = useState("");
   const [location, setLocation] = useState("");
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
-    if (!open) {
-      setName("");
-      setImage("");
-      setQuantity("");
-      setPrice("");
-      setLocation("");
+    if (open) {
+      fetchLocations();
+    } else {
+      clearFields();
     }
   }, [open]);
 
-  const handleClear = () => {
+  const fetchLocations = async () => {
+    try {
+      const response = await axios.get("/api/inventory"); 
+      setLocations(response.data || []);
+    } catch (error) {
+      console.error("Failed to fetch inventory locations", error);
+    }
+  };
+
+  const clearFields = () => {
     setName("");
     setImage("");
     setQuantity("");
@@ -43,16 +51,10 @@ export default function ProductModal({ open, onClose, onSubmit }) {
   };
 
   const handleSubmit = () => {
-    if (!name.trim() || !image.trim() || !quantity || !price || !location)
-      return;
+    if (!name.trim() || !image.trim() || !quantity || !price || !location) return;
     onSubmit({ name, image, quantity, price, location });
-    handleClear();
+    clearFields();
     onClose();
-  };
-
-  const handleClearLocation = (e) => {
-    e.stopPropagation(); // prevent select dropdown from toggling
-    setLocation("");
   };
 
   return (
@@ -61,11 +63,7 @@ export default function ProductModal({ open, onClose, onSubmit }) {
       onClose={onClose}
       maxWidth="xs"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: "12px",
-        },
-      }}
+      PaperProps={{ sx: { borderRadius: "12px" } }}
     >
       <DialogTitle
         sx={{
@@ -172,16 +170,18 @@ export default function ProductModal({ open, onClose, onSubmit }) {
             <MenuItem value="" disabled>
               Select location
             </MenuItem>
-            <MenuItem value="Warehouse A">Warehouse A</MenuItem>
-            <MenuItem value="Warehouse B">Warehouse B</MenuItem>
-            <MenuItem value="Storefront">Storefront</MenuItem>
+            {locations.map((loc) => (
+              <MenuItem key={loc.id} value={loc.location}>
+                {loc.location}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </DialogContent>
 
       <DialogActions sx={{ px: 2.5, py: 1.5 }}>
         <Button
-          onClick={handleClear}
+          onClick={clearFields}
           variant="outlined"
           size="small"
           sx={{
