@@ -8,8 +8,8 @@ import Image from "next/image";
 import axios from "axios";
 import Navbar from "@/app/components/Navbar";
 import ProductModal from "@/app/components/ProductModal";
+import { useSnackbar } from "@/app/context/SnackbarContext";
 
-// Helper function to validate URL
 const isValidUrl = (string) => {
   try {
     new URL(string);
@@ -27,11 +27,10 @@ const columns = [
     renderCell: (params) => {
       const [imageError, setImageError] = useState(false);
       const [imageSrc, setImageSrc] = useState(() => {
-        // Validate the URL before using it
         if (params.row.imageUrl && isValidUrl(params.row.imageUrl)) {
           return params.row.imageUrl;
         }
-        return "/octopus.png"; // fallback to default image
+        return "/octopus.png";
       });
 
       const handleImageError = () => {
@@ -48,7 +47,7 @@ const columns = [
             height={60}
             className="rounded"
             onError={handleImageError}
-            unoptimized={!imageSrc.startsWith('/')} // Don't optimize external images
+            unoptimized={!imageSrc.startsWith('/')}
           />
           <span className="text-sm font-medium text-[#333333]">
             {params.row.name}
@@ -150,31 +149,24 @@ const columns = [
 export default function ProductOverview() {
   const [modalOpen, setModalOpen] = useState(false);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { openSnackbar } = useSnackbar();
 
-  // Fetch products data using axios
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      setError(null);
       
       const response = await axios.get('/api/products', {
-        withCredentials: true, // Include cookies for authentication
+        withCredentials: true,
       });
 
       const data = response.data;
       
-      // Transform the data to match the DataGrid format
       const transformedData = data.map(product => {
-        // Calculate total quantity across all locations
         const totalQuantity = product.locations.reduce((sum, loc) => sum + loc.quantity, 0);
-        
-        // Get location names (assuming a product can be in multiple locations)
         const locationNames = product.locations.map(loc => loc.location.name).join(', ');
         
-        // Validate and clean image URL
-        let validImageUrl = "/octopus.png"; // default fallback
+        let validImageUrl = "/octopus.png";
         if (product.imageUrl) {
           const trimmedUrl = product.imageUrl.trim();
           if (isValidUrl(trimmedUrl)) {
@@ -189,79 +181,45 @@ export default function ProductOverview() {
           totalQuantity: totalQuantity,
           location: locationNames || 'No location',
           srp: product.price.toFixed(2),
-          // Keep original product data for potential future use
           originalData: product
         };
       });
 
       setProducts(transformedData);
+      
+      if (transformedData.length === 0) {
+        openSnackbar('No products found. Add your first product to get started.', 'info');
+      } else {
+        openSnackbar(`Successfully loaded ${transformedData.length} products`, 'success');
+      }
+      
     } catch (err) {
       console.error('Error fetching products:', err);
       
-      // Handle different types of axios errors
       if (err.response) {
-        // Server responded with error status
         if (err.response.status === 401) {
-          setError('Authentication required. Please log in.');
+          openSnackbar('Authentication required. Please log in.', 'error');
         } else {
-          setError(`Failed to fetch products: ${err.response.status} - ${err.response.data?.error || 'Unknown error'}`);
+          openSnackbar(`Failed to fetch products: ${err.response.status} - ${err.response.data?.error || 'Unknown error'}`, 'error');
         }
       } else if (err.request) {
-        // Request was made but no response received
-        setError('Network error. Please check your connection.');
+        openSnackbar('Network error. Please check your connection.', 'error');
       } else {
-        // Something else happened
-        setError(err.message || 'An unexpected error occurred.');
+        openSnackbar(err.message || 'An unexpected error occurred.', 'error');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch products on component mount
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Refresh products when modal closes (in case new product was added)
   const handleModalClose = () => {
     setModalOpen(false);
-    fetchProducts(); // Refresh the data
+    fetchProducts();
   };
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="p-8 min-h-screen">
-        <Navbar />
-        <div className="mx-auto max-w-6xl">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-lg text-[#333333]">Loading products...</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="p-8 min-h-screen">
-        <Navbar />
-        <div className="mx-auto max-w-6xl">
-          <div className="flex flex-col justify-center items-center h-64">
-            <div className="text-lg text-red-600 mb-4">Error: {error}</div>
-            <button
-              onClick={fetchProducts}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-8 min-h-screen">
@@ -310,12 +268,6 @@ export default function ProductOverview() {
           loading={loading}
           disableRowSelectionOnClick
         />
-
-        {products.length === 0 && !loading && (
-          <div className="text-center py-8 text-gray-500">
-            No products found. Add your first product to get started.
-          </div>
-        )}
       </div>
 
       <ProductModal
