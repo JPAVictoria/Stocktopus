@@ -23,7 +23,6 @@ async function getUserFromToken() {
   }
 }
 
-
 async function requireAuth() {
   const user = await getUserFromToken();
   if (!user) {
@@ -34,13 +33,11 @@ async function requireAuth() {
 
 export async function POST(request) {
   try {
-    
     const user = await requireAuth();
 
     const body = await request.json();
     const { name, imageUrl, quantity, price, locationId } = body;
 
-    
     if (!name || !name.trim()) {
       return NextResponse.json(
         { error: "Product name is required" },
@@ -76,7 +73,6 @@ export async function POST(request) {
       );
     }
 
-    
     const existingProduct = await prisma.product.findFirst({
       where: {
         name: {
@@ -94,7 +90,6 @@ export async function POST(request) {
       );
     }
 
-    
     const location = await prisma.location.findUnique({
       where: {
         id: locationId,
@@ -109,20 +104,17 @@ export async function POST(request) {
       );
     }
 
-    
     const result = await prisma.$transaction(async (tx) => {
-      
       const product = await tx.product.create({
         data: {
           name: name.trim(),
           imageUrl: imageUrl.trim(),
           quantity: parseInt(quantity),
           price: parseFloat(price),
-          createdById: user.id, 
+          createdById: user.id,
         },
       });
 
-      
       const productLocation = await tx.productLocation.create({
         data: {
           productId: product.id,
@@ -140,7 +132,6 @@ export async function POST(request) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    
     if (error.message === 'Authentication required') {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -158,7 +149,6 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    
     const user = await requireAuth();
 
     const products = await prisma.product.findMany({
@@ -189,7 +179,6 @@ export async function GET(request) {
 
     return NextResponse.json(products);
   } catch (error) {
-    
     if (error.message === 'Authentication required') {
       return NextResponse.json(
         { error: "Authentication required" },

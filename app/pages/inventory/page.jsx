@@ -135,7 +135,7 @@ export default function InventoryLocations() {
     {
       field: "actions",
       headerName: "Actions",
-      flex: 1,
+      flex: 0.6,
       headerAlign: "center",
       align: "center",
       sortable: false,

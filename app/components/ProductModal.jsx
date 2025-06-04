@@ -19,7 +19,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 
-export default function ProductModal({ open, onClose, onSubmit }) {
+export default function ProductModal({ open, onClose, onSubmit, mode = 'create', product = null }) {
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -29,14 +29,38 @@ export default function ProductModal({ open, onClose, onSubmit }) {
   const [loading, setLoading] = useState(false);
   
   const { openSnackbar } = useSnackbar();
+  const isUpdateMode = mode === 'update';
 
   useEffect(() => {
     if (open) {
       fetchLocations();
+      if (isUpdateMode && product) {
+        populateFields(product);
+      } else {
+        clearFields();
+      }
     } else {
       clearFields();
     }
-  }, [open]);
+  }, [open, mode, product]);
+
+  const populateFields = (productData) => {
+    setName(productData.name || "");
+    setImage(productData.imageUrl || "");
+    setPrice(productData.srp || "");
+    
+    if (productData.originalData) {
+      const totalQuantity = productData.originalData.locations.reduce(
+        (sum, loc) => sum + loc.quantity,
+        0
+      );
+      setQuantity(totalQuantity.toString());
+      
+      if (productData.originalData.locations.length > 0) {
+        setLocation(productData.originalData.locations[0].locationId);
+      }
+    }
+  };
 
   const fetchLocations = async () => {
     try {
@@ -57,7 +81,6 @@ export default function ProductModal({ open, onClose, onSubmit }) {
   };
 
   const handleSubmit = async () => {
-    // Validation
     if (!name.trim()) {
       openSnackbar("Product name is required", "error");
       return;
@@ -90,25 +113,32 @@ export default function ProductModal({ open, onClose, onSubmit }) {
         locationId: location,
       };
 
-      const response = await axios.post("/api/products", productData);
+      let response;
+      if (isUpdateMode) {
+        response = await axios.put(`/api/products/${product.id}`, productData);
+        openSnackbar("Product updated successfully!", "success");
+      } else {
+        response = await axios.post("/api/products", productData);
+        openSnackbar("Product created successfully!", "success");
+      }
 
-      // Call the parent's onSubmit callback if provided
       if (onSubmit) {
         onSubmit(response.data);
       }
 
-      openSnackbar("Product created successfully!", "success");
       clearFields();
       onClose();
     } catch (error) {
-      console.error("Failed to create product:", error);
+      console.error(`Failed to ${isUpdateMode ? 'update' : 'create'} product:`, error);
 
       if (error.response?.status === 409) {
         openSnackbar("A product with this name already exists", "error");
+      } else if (error.response?.status === 404 && isUpdateMode) {
+        openSnackbar("Product not found", "error");
       } else if (error.response?.data?.error) {
         openSnackbar(error.response.data.error, "error");
       } else {
-        openSnackbar("Failed to create product. Please try again.", "error");
+        openSnackbar(`Failed to ${isUpdateMode ? 'update' : 'create'} product. Please try again.`, "error");
       }
     } finally {
       setLoading(false);
@@ -136,7 +166,7 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           px: 2,
         }}
       >
-        Add New Product
+        {isUpdateMode ? "Update Product" : "Add New Product"}
         <IconButton
           onClick={onClose}
           size="small"
@@ -289,10 +319,10 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           {loading ? (
             <>
               <CircularProgress size={16} sx={{ mr: 1, color: "#ffffff" }} />
-              Creating...
+              {isUpdateMode ? "Updating..." : "Creating..."}
             </>
           ) : (
-            "Submit"
+            isUpdateMode ? "Update" : "Submit"
           )}
         </Button>
       </DialogActions>

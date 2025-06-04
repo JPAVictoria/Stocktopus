@@ -23,145 +23,156 @@ const formatNumberWithCommas = (number) => {
   return number.toLocaleString();
 };
 
-const columns = [
-  {
-    field: "product",
-    headerName: "Product",
-    width: 300,
-    renderCell: (params) => {
-      const [imageError, setImageError] = useState(false);
-      const [imageSrc, setImageSrc] = useState(() => {
-        if (params.row.imageUrl && isValidUrl(params.row.imageUrl)) {
-          return params.row.imageUrl;
-        }
-        return "/octopus.png";
-      });
-
-      const handleImageError = () => {
-        setImageError(true);
-        setImageSrc("/octopus.png");
-      };
-
-      return (
-        <div className="flex items-center gap-4">
-          <Image
-            src={imageSrc}
-            alt={params.row.name || "Product"}
-            width={60}
-            height={60}
-            className="rounded"
-            onError={handleImageError}
-            unoptimized={!imageSrc.startsWith("/")}
-          />
-          <span className="text-sm font-medium text-[#333333]">
-            {params.row.name}
-          </span>
-        </div>
-      );
-    },
-  },
-  {
-    field: "totalQuantity",
-    headerName: "Total Quantity",
-    headerAlign: "center",
-    align: "center",
-    flex: 0.5,
-    renderCell: (params) => (
-      <div className="text-[#333333] flex items-center h-full">
-        {formatNumberWithCommas(params.value)}
-      </div>
-    ),
-  },
-  {
-    field: "location",
-    headerName: "Inventory Location",
-    headerAlign: "center",
-    align: "center",
-    flex: 1,
-    renderCell: (params) => (
-      <div className="text-[#333333] flex items-center h-full">
-        {params.value}
-      </div>
-    ),
-  },
-  {
-    field: "srp",
-    headerName: "SRP",
-    headerAlign: "center",
-    align: "center",
-    width: 50,
-    flex: 0.8,
-    renderCell: (params) => (
-      <div className="text-[#333333] flex items-center h-full">
-        ₱{formatNumberWithCommas(parseFloat(params.value))}
-      </div>
-    ),
-  },
-  {
-    field: "actions",
-    headerName: "Actions",
-    flex: 1.5,
-    headerAlign: "center",
-    align: "center",
-    sortable: false,
-    renderCell: () => {
-      const colors = {
-        add: "rgba(34,197,94,0.15)",
-        subtract: "rgba(220,38,38,0.15)",
-        transfer: "rgba(6,182,212,0.15)",
-        delete: "rgba(270,48,48,0.45)",
-      };
-
-      const iconWrapperStyle = (bgColor) => ({
-        background: `radial-gradient(circle, ${bgColor} 0%, transparent 80%)`,
-        borderRadius: "50%",
-        padding: "10px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        width: "40px",
-        height: "40px",
-        userSelect: "none",
-      });
-
-      return (
-        <div className="flex items-center gap-8">
-          <div className="flex flex-col items-center cursor-pointer text-green-600">
-            <div style={iconWrapperStyle(colors.add)}>
-              <Plus size={22} />
-            </div>
-            <span className="text-xs">Add</span>
-          </div>
-          <div className="flex flex-col items-center cursor-pointer text-red-600">
-            <div style={iconWrapperStyle(colors.subtract)}>
-              <Minus size={22} />
-            </div>
-            <span className="text-xs">Subtract</span>
-          </div>
-          <div className="flex flex-col items-center cursor-pointer text-cyan-600">
-            <div style={iconWrapperStyle(colors.transfer)}>
-              <MoveRight size={22} />
-            </div>
-            <span className="text-xs">Transfer</span>
-          </div>
-          <div className="flex flex-col items-center cursor-pointer text-red-800">
-            <div style={iconWrapperStyle(colors.delete)}>
-              <Trash2 size={22} />
-            </div>
-            <span className="text-xs">Delete</span>
-          </div>
-        </div>
-      );
-    },
-  },
-];
-
 export default function ProductOverview() {
   const [modalOpen, setModalOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [modalMode, setModalMode] = useState('create'); 
   const { openSnackbar } = useSnackbar();
+
+  const handleProductNameClick = (product) => {
+    setSelectedProduct(product);
+    setModalMode('update');
+    setModalOpen(true);
+  };
+
+  const columns = [
+    {
+      field: "product",
+      headerName: "Product",
+      width: 300,
+      renderCell: (params) => {
+        const [imageError, setImageError] = useState(false);
+        const [imageSrc, setImageSrc] = useState(() => {
+          if (params.row.imageUrl && isValidUrl(params.row.imageUrl)) {
+            return params.row.imageUrl;
+          }
+          return "/octopus.png";
+        });
+
+        const handleImageError = () => {
+          setImageError(true);
+          setImageSrc("/octopus.png");
+        };
+
+        return (
+          <div className="flex items-center gap-4">
+            <Image
+              src={imageSrc}
+              alt={params.row.name || "Product"}
+              width={60}
+              height={60}
+              className="rounded"
+              onError={handleImageError}
+              unoptimized={!imageSrc.startsWith("/")}
+            />
+            <span 
+              className="text-sm font-medium text-[#333333] cursor-pointer hover:underline transition-all duration-200"
+              onClick={() => handleProductNameClick(params.row)}
+            >
+              {params.row.name}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      field: "totalQuantity",
+      headerName: "Total Quantity",
+      headerAlign: "center",
+      align: "center",
+      flex: 0.5,
+      renderCell: (params) => (
+        <div className="text-[#333333] flex items-center h-full">
+          {formatNumberWithCommas(params.value)}
+        </div>
+      ),
+    },
+    {
+      field: "location",
+      headerName: "Inventory Location",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+      renderCell: (params) => (
+        <div className="text-[#333333] flex items-center h-full">
+          {params.value}
+        </div>
+      ),
+    },
+    {
+      field: "srp",
+      headerName: "SRP",
+      headerAlign: "center",
+      align: "center",
+      width: 50,
+      flex: 0.8,
+      renderCell: (params) => (
+        <div className="text-[#333333] flex items-center h-full">
+          ₱{formatNumberWithCommas(parseFloat(params.value))}
+        </div>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1.5,
+      headerAlign: "center",
+      align: "center",
+      sortable: false,
+      renderCell: () => {
+        const colors = {
+          add: "rgba(34,197,94,0.15)",
+          subtract: "rgba(220,38,38,0.15)",
+          transfer: "rgba(6,182,212,0.15)",
+          delete: "rgba(270,48,48,0.45)",
+        };
+
+        const iconWrapperStyle = (bgColor) => ({
+          background: `radial-gradient(circle, ${bgColor} 0%, transparent 80%)`,
+          borderRadius: "50%",
+          padding: "10px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          width: "40px",
+          height: "40px",
+          userSelect: "none",
+        });
+
+        return (
+          <div className="flex items-center gap-8">
+            <div className="flex flex-col items-center cursor-pointer text-green-600">
+              <div style={iconWrapperStyle(colors.add)}>
+                <Plus size={22} />
+              </div>
+              <span className="text-xs">Add</span>
+            </div>
+            <div className="flex flex-col items-center cursor-pointer text-red-600">
+              <div style={iconWrapperStyle(colors.subtract)}>
+                <Minus size={22} />
+              </div>
+              <span className="text-xs">Subtract</span>
+            </div>
+            <div className="flex flex-col items-center cursor-pointer text-cyan-600">
+              <div style={iconWrapperStyle(colors.transfer)}>
+                <MoveRight size={22} />
+              </div>
+              <span className="text-xs">Transfer</span>
+            </div>
+            <div className="flex flex-col items-center cursor-pointer text-red-800">
+              <div style={iconWrapperStyle(colors.delete)}>
+                <Trash2 size={22} />
+              </div>
+              <span className="text-xs">Delete</span>
+            </div>
+          </div>
+        );
+      },
+    },
+  ];
 
   const fetchProducts = async () => {
     try {
@@ -232,7 +243,15 @@ export default function ProductOverview() {
 
   const handleModalClose = () => {
     setModalOpen(false);
+    setSelectedProduct(null);
+    setModalMode('create');
     fetchProducts();
+  };
+
+  const handleAddProduct = () => {
+    setSelectedProduct(null);
+    setModalMode('create');
+    setModalOpen(true);
   };
 
   return (
@@ -245,7 +264,7 @@ export default function ProductOverview() {
             Product Inventory
           </h2>
           <button
-            onClick={() => setModalOpen(true)}
+            onClick={handleAddProduct}
             className="flex flex-col items-center text-sm text-[#333333] cursor-pointer hover:bg-gray-200 rounded-md transition-colors duration-200 px-4 py-2"
           >
             <SquarePlus size={20} className="mb-1" />
@@ -258,6 +277,7 @@ export default function ProductOverview() {
           columns={columns}
           rowHeight={80}
           pageSizeOptions={[5, 10, 25]}
+          loading={loading}
           initialState={{
             pagination: {
               paginationModel: { pageSize: 10, page: 0 },
@@ -279,7 +299,6 @@ export default function ProductOverview() {
               alignItems: "center",
             },
           }}
-          loading={loading}
           disableRowSelectionOnClick
         />
       </div>
@@ -288,6 +307,8 @@ export default function ProductOverview() {
         open={modalOpen}
         onClose={handleModalClose}
         onSubmit={() => {}}
+        mode={modalMode}
+        product={selectedProduct}
       />
     </div>
   );
