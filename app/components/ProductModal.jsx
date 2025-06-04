@@ -14,6 +14,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -24,21 +26,25 @@ export default function ProductModal({ open, onClose, onSubmit }) {
   const [price, setPrice] = useState("");
   const [location, setLocation] = useState("");
   const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (open) {
       fetchLocations();
     } else {
       clearFields();
+      setError("");
     }
   }, [open]);
 
   const fetchLocations = async () => {
     try {
-      const response = await axios.get("/api/inventory"); 
+      const response = await axios.get("/api/inventory");
       setLocations(response.data || []);
     } catch (error) {
       console.error("Failed to fetch inventory locations", error);
+      setError("Failed to fetch locations");
     }
   };
 
@@ -50,11 +56,65 @@ export default function ProductModal({ open, onClose, onSubmit }) {
     setLocation("");
   };
 
-  const handleSubmit = () => {
-    if (!name.trim() || !image.trim() || !quantity || !price || !location) return;
-    onSubmit({ name, image, quantity, price, location });
-    clearFields();
-    onClose();
+  const handleSubmit = async () => {
+    // Clear previous errors
+    setError("");
+
+    // Validation
+    if (!name.trim()) {
+      setError("Product name is required");
+      return;
+    }
+    if (!image.trim()) {
+      setError("Image URL is required");
+      return;
+    }
+    if (!quantity || quantity <= 0) {
+      setError("Valid quantity is required");
+      return;
+    }
+    if (!price || price <= 0) {
+      setError("Valid price is required");
+      return;
+    }
+    if (!location) {
+      setError("Location is required");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const productData = {
+        name: name.trim(),
+        imageUrl: image.trim(),
+        quantity: parseInt(quantity),
+        price: parseFloat(price),
+        locationId: location,
+      };
+
+      const response = await axios.post("/api/products", productData);
+
+      // Call the parent's onSubmit callback if provided
+      if (onSubmit) {
+        onSubmit(response.data);
+      }
+
+      clearFields();
+      onClose();
+    } catch (error) {
+      console.error("Failed to create product:", error);
+
+      if (error.response?.status === 409) {
+        setError("A product with this name already exists");
+      } else if (error.response?.data?.error) {
+        setError(error.response.data.error);
+      } else {
+        setError("Failed to create product. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -84,12 +144,19 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           size="small"
           aria-label="close"
           sx={{ color: "#ffffff" }}
+          disabled={loading}
         >
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
       <DialogContent dividers sx={{ px: 2.5, py: 2.5 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2, fontSize: "0.85rem" }}>
+            {error}
+          </Alert>
+        )}
+
         <TextField
           fullWidth
           label="Product Name"
@@ -100,6 +167,8 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           sx={{ mt: 1 }}
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
           InputProps={{ style: { color: "#333333" } }}
+          disabled={loading}
+          error={error.includes("name")}
         />
 
         <TextField
@@ -112,6 +181,7 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           sx={{ mt: 2 }}
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
           InputProps={{ style: { color: "#333333" } }}
+          disabled={loading}
         />
 
         <TextField
@@ -124,7 +194,8 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           size="small"
           sx={{ mt: 2 }}
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
-          InputProps={{ style: { color: "#333333" }, inputProps: { min: 0 } }}
+          InputProps={{ style: { color: "#333333" }, inputProps: { min: 1 } }}
+          disabled={loading}
         />
 
         <TextField
@@ -137,7 +208,11 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           size="small"
           sx={{ mt: 2 }}
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
-          InputProps={{ style: { color: "#333333" }, inputProps: { min: 0 } }}
+          InputProps={{
+            style: { color: "#333333" },
+            inputProps: { min: 0.01, step: 0.01 },
+          }}
+          disabled={loading}
         />
 
         <FormControl fullWidth margin="dense" size="small" sx={{ mt: 2 }}>
@@ -154,8 +229,10 @@ export default function ProductModal({ open, onClose, onSubmit }) {
             onChange={(e) => setLocation(e.target.value)}
             label="Inventory Location"
             sx={{ color: "#333333" }}
+            disabled={loading}
             endAdornment={
-              location && (
+              location &&
+              !loading && (
                 <IconButton
                   size="small"
                   onClick={() => setLocation("")}
@@ -171,7 +248,9 @@ export default function ProductModal({ open, onClose, onSubmit }) {
               Select location
             </MenuItem>
             {locations.map((loc) => (
-              <MenuItem key={loc.id} value={loc.location}>
+              <MenuItem key={loc.id} value={loc.id}>
+                {" "}
+                {/* Changed from loc.location to loc.id */}
                 {loc.location}
               </MenuItem>
             ))}
@@ -184,6 +263,7 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           onClick={clearFields}
           variant="outlined"
           size="small"
+          disabled={loading}
           sx={{
             color: "#333333",
             borderColor: "#333333",
@@ -200,6 +280,7 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           onClick={handleSubmit}
           variant="contained"
           size="small"
+          disabled={loading}
           sx={{
             backgroundColor: "#ffa408",
             color: "#ffffff",
@@ -211,9 +292,19 @@ export default function ProductModal({ open, onClose, onSubmit }) {
             "&:hover": {
               backgroundColor: "#e69906",
             },
+            "&:disabled": {
+              backgroundColor: "#cccccc",
+            },
           }}
         >
-          Submit
+          {loading ? (
+            <>
+              <CircularProgress size={16} sx={{ mr: 1, color: "#ffffff" }} />
+              Creating...
+            </>
+          ) : (
+            "Submit"
+          )}
         </Button>
       </DialogActions>
     </Dialog>

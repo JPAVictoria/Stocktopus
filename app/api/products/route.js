@@ -1,0 +1,206 @@
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+
+const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'stocktopus';
+
+async function getUserFromToken() {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token');
+    
+    if (!token) {
+      return null;
+    }
+    
+    const decoded = jwt.verify(token.value, JWT_SECRET);
+    return decoded;
+  } catch (error) {
+    console.error('Token verification error:', error);
+    return null;
+  }
+}
+
+// Helper function that requires authentication
+async function requireAuth() {
+  const user = await getUserFromToken();
+  if (!user) {
+    throw new Error('Authentication required');
+  }
+  return user;
+}
+
+export async function POST(request) {
+  try {
+    // Get authenticated user - throws error if not authenticated
+    const user = await requireAuth();
+
+    const body = await request.json();
+    const { name, imageUrl, quantity, price, locationId } = body;
+
+    // Validation
+    if (!name || !name.trim()) {
+      return NextResponse.json(
+        { error: "Product name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!imageUrl || !imageUrl.trim()) {
+      return NextResponse.json(
+        { error: "Image URL is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!quantity || quantity <= 0) {
+      return NextResponse.json(
+        { error: "Valid quantity is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!price || price <= 0) {
+      return NextResponse.json(
+        { error: "Valid price is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!locationId) {
+      return NextResponse.json(
+        { error: "Location is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if product with same name already exists (case-insensitive)
+    const existingProduct = await prisma.product.findFirst({
+      where: {
+        name: {
+          equals: name.trim(),
+          mode: "insensitive",
+        },
+        deleted: false,
+      },
+    });
+
+    if (existingProduct) {
+      return NextResponse.json(
+        { error: "A product with this name already exists" },
+        { status: 409 }
+      );
+    }
+
+    // Verify location exists
+    const location = await prisma.location.findUnique({
+      where: {
+        id: locationId,
+        deleted: false,
+      },
+    });
+
+    if (!location) {
+      return NextResponse.json(
+        { error: "Invalid location selected" },
+        { status: 400 }
+      );
+    }
+
+    // Create the product and product location in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create the product with authenticated user ID
+      const product = await tx.product.create({
+        data: {
+          name: name.trim(),
+          imageUrl: imageUrl.trim(),
+          quantity: parseInt(quantity),
+          price: parseFloat(price),
+          createdById: user.id, // Use the authenticated user's ID
+        },
+      });
+
+      // Create the product location relationship
+      const productLocation = await tx.productLocation.create({
+        data: {
+          productId: product.id,
+          locationId: locationId,
+          quantity: parseInt(quantity),
+        },
+      });
+
+      return {
+        ...product,
+        location: location.name,
+        productLocationId: productLocation.id,
+      };
+    });
+
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    // Handle authentication errors
+    if (error.message === 'Authentication required') {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+    
+    console.error("Error creating product:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request) {
+  try {
+    // Get authenticated user - throws error if not authenticated
+    const user = await requireAuth();
+
+    const products = await prisma.product.findMany({
+      where: {
+        deleted: false,
+      },
+      include: {
+        locations: {
+          where: {
+            deleted: false,
+          },
+          include: {
+            location: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return NextResponse.json(products);
+  } catch (error) {
+    // Handle authentication errors
+    if (error.message === 'Authentication required') {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+    
+    console.error("Error fetching products:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
