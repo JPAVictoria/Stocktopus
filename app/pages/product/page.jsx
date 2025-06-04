@@ -187,11 +187,6 @@ export default function ProductOverview() {
 
       setProducts(transformedData);
       
-      if (transformedData.length === 0) {
-        openSnackbar('No products found. Add your first product to get started.', 'info');
-      } else {
-        openSnackbar(`Successfully loaded ${transformedData.length} products`, 'success');
-      }
       
     } catch (err) {
       console.error('Error fetching products:', err);

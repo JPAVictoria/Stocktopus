@@ -14,10 +14,10 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Alert,
   CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useSnackbar } from "@/app/context/SnackbarContext";
 
 export default function ProductModal({ open, onClose, onSubmit }) {
   const [name, setName] = useState("");
@@ -27,14 +27,14 @@ export default function ProductModal({ open, onClose, onSubmit }) {
   const [location, setLocation] = useState("");
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  
+  const { openSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (open) {
       fetchLocations();
     } else {
       clearFields();
-      setError("");
     }
   }, [open]);
 
@@ -44,7 +44,7 @@ export default function ProductModal({ open, onClose, onSubmit }) {
       setLocations(response.data || []);
     } catch (error) {
       console.error("Failed to fetch inventory locations", error);
-      setError("Failed to fetch locations");
+      openSnackbar("Failed to fetch locations", "error");
     }
   };
 
@@ -57,28 +57,25 @@ export default function ProductModal({ open, onClose, onSubmit }) {
   };
 
   const handleSubmit = async () => {
-    // Clear previous errors
-    setError("");
-
     // Validation
     if (!name.trim()) {
-      setError("Product name is required");
+      openSnackbar("Product name is required", "error");
       return;
     }
     if (!image.trim()) {
-      setError("Image URL is required");
+      openSnackbar("Image URL is required", "error");
       return;
     }
     if (!quantity || quantity <= 0) {
-      setError("Valid quantity is required");
+      openSnackbar("Valid quantity is required", "error");
       return;
     }
     if (!price || price <= 0) {
-      setError("Valid price is required");
+      openSnackbar("Valid price is required", "error");
       return;
     }
     if (!location) {
-      setError("Location is required");
+      openSnackbar("Location is required", "error");
       return;
     }
 
@@ -100,17 +97,18 @@ export default function ProductModal({ open, onClose, onSubmit }) {
         onSubmit(response.data);
       }
 
+      openSnackbar("Product created successfully!", "success");
       clearFields();
       onClose();
     } catch (error) {
       console.error("Failed to create product:", error);
 
       if (error.response?.status === 409) {
-        setError("A product with this name already exists");
+        openSnackbar("A product with this name already exists", "error");
       } else if (error.response?.data?.error) {
-        setError(error.response.data.error);
+        openSnackbar(error.response.data.error, "error");
       } else {
-        setError("Failed to create product. Please try again.");
+        openSnackbar("Failed to create product. Please try again.", "error");
       }
     } finally {
       setLoading(false);
@@ -151,12 +149,6 @@ export default function ProductModal({ open, onClose, onSubmit }) {
       </DialogTitle>
 
       <DialogContent dividers sx={{ px: 2.5, py: 2.5 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2, fontSize: "0.85rem" }}>
-            {error}
-          </Alert>
-        )}
-
         <TextField
           fullWidth
           label="Product Name"
@@ -168,7 +160,6 @@ export default function ProductModal({ open, onClose, onSubmit }) {
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
           InputProps={{ style: { color: "#333333" } }}
           disabled={loading}
-          error={error.includes("name")}
         />
 
         <TextField
@@ -249,8 +240,6 @@ export default function ProductModal({ open, onClose, onSubmit }) {
             </MenuItem>
             {locations.map((loc) => (
               <MenuItem key={loc.id} value={loc.id}>
-                {" "}
-                {/* Changed from loc.location to loc.id */}
                 {loc.location}
               </MenuItem>
             ))}
