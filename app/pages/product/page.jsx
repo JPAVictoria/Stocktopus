@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { SquarePlus, Minus, MoveRight, Plus } from "lucide-react";
+import { SquarePlus, Minus, MoveRight, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import axios from "axios";
 import Navbar from "@/app/components/Navbar";
@@ -17,6 +17,10 @@ const isValidUrl = (string) => {
   } catch (error) {
     return false;
   }
+};
+
+const formatNumberWithCommas = (number) => {
+  return number.toLocaleString();
 };
 
 const columns = [
@@ -47,7 +51,7 @@ const columns = [
             height={60}
             className="rounded"
             onError={handleImageError}
-            unoptimized={!imageSrc.startsWith('/')}
+            unoptimized={!imageSrc.startsWith("/")}
           />
           <span className="text-sm font-medium text-[#333333]">
             {params.row.name}
@@ -64,7 +68,7 @@ const columns = [
     flex: 0.5,
     renderCell: (params) => (
       <div className="text-[#333333] flex items-center h-full">
-        {params.value}
+        {formatNumberWithCommas(params.value)}
       </div>
     ),
   },
@@ -89,14 +93,14 @@ const columns = [
     flex: 0.8,
     renderCell: (params) => (
       <div className="text-[#333333] flex items-center h-full">
-        ₱{params.value}
+        ₱{formatNumberWithCommas(parseFloat(params.value))}
       </div>
     ),
   },
   {
     field: "actions",
     headerName: "Actions",
-    flex: 1,
+    flex: 1.5,
     headerAlign: "center",
     align: "center",
     sortable: false,
@@ -105,6 +109,7 @@ const columns = [
         add: "rgba(34,197,94,0.15)",
         subtract: "rgba(220,38,38,0.15)",
         transfer: "rgba(6,182,212,0.15)",
+        delete: "rgba(270,48,48,0.45)",
       };
 
       const iconWrapperStyle = (bgColor) => ({
@@ -140,6 +145,12 @@ const columns = [
             </div>
             <span className="text-xs">Transfer</span>
           </div>
+          <div className="flex flex-col items-center cursor-pointer text-red-800">
+            <div style={iconWrapperStyle(colors.delete)}>
+              <Trash2 size={22} />
+            </div>
+            <span className="text-xs">Delete</span>
+          </div>
         </div>
       );
     },
@@ -155,17 +166,22 @@ export default function ProductOverview() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      
-      const response = await axios.get('/api/products', {
+
+      const response = await axios.get("/api/products", {
         withCredentials: true,
       });
 
       const data = response.data;
-      
-      const transformedData = data.map(product => {
-        const totalQuantity = product.locations.reduce((sum, loc) => sum + loc.quantity, 0);
-        const locationNames = product.locations.map(loc => loc.location.name).join(', ');
-        
+
+      const transformedData = data.map((product) => {
+        const totalQuantity = product.locations.reduce(
+          (sum, loc) => sum + loc.quantity,
+          0
+        );
+        const locationNames = product.locations
+          .map((loc) => loc.location.name)
+          .join(", ");
+
         let validImageUrl = "/octopus.png";
         if (product.imageUrl) {
           const trimmedUrl = product.imageUrl.trim();
@@ -173,34 +189,37 @@ export default function ProductOverview() {
             validImageUrl = trimmedUrl;
           }
         }
-        
+
         return {
           id: product.id,
           name: product.name,
           imageUrl: validImageUrl,
           totalQuantity: totalQuantity,
-          location: locationNames || 'No location',
+          location: locationNames || "No location",
           srp: product.price.toFixed(2),
-          originalData: product
+          originalData: product,
         };
       });
 
       setProducts(transformedData);
-      
-      
     } catch (err) {
-      console.error('Error fetching products:', err);
-      
+      console.error("Error fetching products:", err);
+
       if (err.response) {
         if (err.response.status === 401) {
-          openSnackbar('Authentication required. Please log in.', 'error');
+          openSnackbar("Authentication required. Please log in.", "error");
         } else {
-          openSnackbar(`Failed to fetch products: ${err.response.status} - ${err.response.data?.error || 'Unknown error'}`, 'error');
+          openSnackbar(
+            `Failed to fetch products: ${err.response.status} - ${
+              err.response.data?.error || "Unknown error"
+            }`,
+            "error"
+          );
         }
       } else if (err.request) {
-        openSnackbar('Network error. Please check your connection.', 'error');
+        openSnackbar("Network error. Please check your connection.", "error");
       } else {
-        openSnackbar(err.message || 'An unexpected error occurred.', 'error');
+        openSnackbar(err.message || "An unexpected error occurred.", "error");
       }
     } finally {
       setLoading(false);
