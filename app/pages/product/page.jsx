@@ -1,305 +1,53 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { SquarePlus, Minus, MoveRight, Plus, Trash2 } from "lucide-react";
-import Image from "next/image";
-import axios from "axios";
+import { SquarePlus } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import ProductModal from "@/app/components/ProductModal";
 import SubtractModal from "@/app/components/SubtractModal";
 import AdditionModal from "@/app/components/AdditionModal";
 import TransferModal from "@/app/components/TransferModal";
+import ConfirmDeleteModal from "@/app/components/ConfirmDeleteModal";
 import { useSnackbar } from "@/app/context/SnackbarContext";
-
-const isValidUrl = (string) => {
-  try {
-    new URL(string);
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
-const formatNumberWithCommas = (number) => {
-  return number.toLocaleString();
-};
+import { useProducts } from "@/app/hooks/useProducts";
+import { useModals } from "@/app/hooks/useProductModals";
+import { createColumns } from "@/app/config/columns";
 
 export default function ProductOverview() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [subtractModalOpen, setSubtractModalOpen] = useState(false);
-  const [additionModalOpen, setAdditionModalOpen] = useState(false);
-  const [transferModalOpen, setTransferModalOpen] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [modalMode, setModalMode] = useState('create'); 
   const { openSnackbar } = useSnackbar();
+  const { products, loading, fetchProducts, deleteProduct } = useProducts(openSnackbar);
+  const modals = useModals();
 
-  const handleProductNameClick = (product) => {
-    setSelectedProduct(product);
-    setModalMode('update');
-    setModalOpen(true);
-  };
-
-  const handleSubtractClick = (product) => {
-    setSelectedProduct(product);
-    setSubtractModalOpen(true);
-  };
-
-  const handleAddClick = (product) => {
-    setSelectedProduct(product);
-    setAdditionModalOpen(true);
-  };
-
-  const handleTransferClick = (product) => {
-    setSelectedProduct(product);
-    setTransferModalOpen(true);
-  };
-
-  const columns = [
-    {
-      field: "product",
-      headerName: "Product",
-      width: 300,
-      renderCell: (params) => {
-        const [imageError, setImageError] = useState(false);
-        const [imageSrc, setImageSrc] = useState(() => {
-          if (params.row.imageUrl && isValidUrl(params.row.imageUrl)) {
-            return params.row.imageUrl;
-          }
-          return "/octopus.png";
-        });
-
-        const handleImageError = () => {
-          setImageError(true);
-          setImageSrc("/octopus.png");
-        };
-
-        return (
-          <div className="flex items-center gap-4">
-            <Image
-              src={imageSrc}
-              alt={params.row.name || "Product"}
-              width={60}
-              height={60}
-              className="rounded"
-              onError={handleImageError}
-              unoptimized={!imageSrc.startsWith("/")}
-            />
-            <span 
-              className="text-sm font-medium text-[#333333] cursor-pointer hover:underline transition-all duration-200"
-              onClick={() => handleProductNameClick(params.row)}
-            >
-              {params.row.name}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      field: "totalQuantity",
-      headerName: "Total Quantity",
-      headerAlign: "center",
-      align: "center",
-      flex: 0.5,
-      renderCell: (params) => (
-        <div className="text-[#333333] flex items-center h-full">
-          {formatNumberWithCommas(params.value)}
-        </div>
-      ),
-    },
-    {
-      field: "location",
-      headerName: "Inventory Location",
-      headerAlign: "center",
-      align: "center",
-      flex: 1,
-      renderCell: (params) => (
-        <div className="text-[#333333] flex items-center h-full">
-          {params.value}
-        </div>
-      ),
-    },
-    {
-      field: "srp",
-      headerName: "SRP",
-      headerAlign: "center",
-      align: "center",
-      width: 50,
-      flex: 0.8,
-      renderCell: (params) => (
-        <div className="text-[#333333] flex items-center h-full">
-          ₱{formatNumberWithCommas(parseFloat(params.value))}
-        </div>
-      ),
-    },
-    {
-      field: "actions",
-      headerName: "Actions",
-      flex: 1.5,
-      headerAlign: "center",
-      align: "center",
-      sortable: false,
-      renderCell: (params) => {
-        const colors = {
-          add: "rgba(34,197,94,0.15)",
-          subtract: "rgba(220,38,38,0.15)",
-          transfer: "rgba(6,182,212,0.15)",
-          delete: "rgba(270,48,48,0.45)",
-        };
-
-        const iconWrapperStyle = (bgColor) => ({
-          background: `radial-gradient(circle, ${bgColor} 0%, transparent 80%)`,
-          borderRadius: "50%",
-          padding: "10px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          width: "40px",
-          height: "40px",
-          userSelect: "none",
-        });
-
-        return (
-          <div className="flex items-center gap-8">
-            <div 
-              className="flex flex-col items-center cursor-pointer text-green-600"
-              onClick={() => handleAddClick(params.row)}
-            >
-              <div style={iconWrapperStyle(colors.add)}>
-                <Plus size={22} />
-              </div>
-              <span className="text-xs">Add</span>
-            </div>
-            <div 
-              className="flex flex-col items-center cursor-pointer text-red-600"
-              onClick={() => handleSubtractClick(params.row)}
-            >
-              <div style={iconWrapperStyle(colors.subtract)}>
-                <Minus size={22} />
-              </div>
-              <span className="text-xs">Subtract</span>
-            </div>
-            <div 
-              className="flex flex-col items-center cursor-pointer text-cyan-600"
-              onClick={() => handleTransferClick(params.row)}
-            >
-              <div style={iconWrapperStyle(colors.transfer)}>
-                <MoveRight size={22} />
-              </div>
-              <span className="text-xs">Transfer</span>
-            </div>
-            <div className="flex flex-col items-center cursor-pointer text-red-800">
-              <div style={iconWrapperStyle(colors.delete)}>
-                <Trash2 size={22} />
-              </div>
-              <span className="text-xs">Delete</span>
-            </div>
-          </div>
-        );
-      },
-    },
-  ];
-
-  const fetchProducts = async () => {
+  const handleConfirmDelete = async () => {
+    if (!modals.deletingProduct) return;
+    
+    modals.setIsDeleting(true);
     try {
-      setLoading(true);
-
-      const response = await axios.get("/api/products", {
-        withCredentials: true,
-      });
-
-      const data = response.data;
-
-      const transformedData = data.map((product) => {
-        const totalQuantity = product.locations.reduce(
-          (sum, loc) => sum + loc.quantity,
-          0
-        );
-        const locationNames = product.locations
-          .map((loc) => loc.location.name)
-          .join(", ");
-
-        let validImageUrl = "/octopus.png";
-        if (product.imageUrl) {
-          const trimmedUrl = product.imageUrl.trim();
-          if (isValidUrl(trimmedUrl)) {
-            validImageUrl = trimmedUrl;
-          }
-        }
-
-        return {
-          id: product.id,
-          name: product.name,
-          imageUrl: validImageUrl,
-          totalQuantity: totalQuantity,
-          location: locationNames || "No location",
-          srp: product.price.toFixed(2),
-          originalData: product,
-        };
-      });
-
-      setProducts(transformedData);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-
-      if (err.response) {
-        if (err.response.status === 401) {
-          openSnackbar("Authentication required. Please log in.", "error");
-        } else {
-          openSnackbar(
-            `Failed to fetch products: ${err.response.status} - ${
-              err.response.data?.error || "Unknown error"
-            }`,
-            "error"
-          );
-        }
-      } else if (err.request) {
-        openSnackbar("Network error. Please check your connection.", "error");
-      } else {
-        openSnackbar(err.message || "An unexpected error occurred.", "error");
-      }
+      await deleteProduct(modals.deletingProduct.id);
+      openSnackbar("Product deleted successfully.", "success");
+      modals.closeDeleteModal();
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+      openSnackbar("Failed to delete product. Please try again.", "error");
     } finally {
-      setLoading(false);
+      modals.setIsDeleting(false);
     }
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const handleModalClose = () => {
-    setModalOpen(false);
-    setSelectedProduct(null);
-    setModalMode('create');
-    fetchProducts();
+  const columnHandlers = {
+    onProductNameClick: (product) => modals.openProductModal(product, 'update'),
+    onAdd: modals.openAdditionModal,
+    onSubtract: modals.openSubtractModal,
+    onTransfer: modals.openTransferModal,
+    onDelete: modals.openDeleteModal,
   };
 
-  const handleSubtractModalClose = () => {
-    setSubtractModalOpen(false);
-    setSelectedProduct(null);
-    fetchProducts();
-  };
+  const columns = createColumns(columnHandlers);
 
-  const handleAdditionModalClose = () => {
-    setAdditionModalOpen(false);
-    setSelectedProduct(null);
+  const handleModalClose = (closeModal) => {
+    closeModal();
     fetchProducts();
-  };
-
-  const handleTransferModalClose = () => {
-    setTransferModalOpen(false);
-    setSelectedProduct(null);
-    fetchProducts();
-  };
-
-  const handleAddProduct = () => {
-    setSelectedProduct(null);
-    setModalMode('create');
-    setModalOpen(true);
   };
 
   return (
@@ -312,7 +60,7 @@ export default function ProductOverview() {
             Product Inventory
           </h2>
           <button
-            onClick={handleAddProduct}
+            onClick={() => modals.openProductModal()}
             className="flex flex-col items-center text-sm text-[#333333] cursor-pointer hover:bg-gray-200 rounded-md transition-colors duration-200 px-4 py-2"
           >
             <SquarePlus size={20} className="mb-1" />
@@ -351,30 +99,42 @@ export default function ProductOverview() {
         />
       </div>
 
+      {/* All Modals */}
       <ProductModal
-        open={modalOpen}
-        onClose={handleModalClose}
+        open={modals.modalOpen}
+        onClose={() => handleModalClose(modals.closeProductModal)}
         onSubmit={() => {}}
-        mode={modalMode}
-        product={selectedProduct}
+        mode={modals.modalMode}
+        product={modals.selectedProduct}
       />
 
       <SubtractModal
-        open={subtractModalOpen}
-        onClose={handleSubtractModalClose}
-        product={selectedProduct}
+        open={modals.subtractModalOpen}
+        onClose={() => handleModalClose(modals.closeSubtractModal)}
+        product={modals.selectedProduct}
       />
 
       <AdditionModal
-        open={additionModalOpen}
-        onClose={handleAdditionModalClose}
-        product={selectedProduct}
+        open={modals.additionModalOpen}
+        onClose={() => handleModalClose(modals.closeAdditionModal)}
+        product={modals.selectedProduct}
       />
 
       <TransferModal
-        open={transferModalOpen}
-        onClose={handleTransferModalClose}
-        product={selectedProduct}
+        open={modals.transferModalOpen}
+        onClose={() => handleModalClose(modals.closeTransferModal)}
+        product={modals.selectedProduct}
+      />
+
+      <ConfirmDeleteModal
+        open={modals.confirmDeleteOpen}
+        onClose={modals.closeDeleteModal}
+        onConfirm={handleConfirmDelete}
+        isDeleting={modals.isDeleting}
+        title="Delete Product"
+        message="Are you sure you want to delete this product? This will remove it from all locations and cannot be undone."
+        itemName={modals.deletingProduct?.name}
+        confirmText="Delete Product"
       />
     </div>
   );

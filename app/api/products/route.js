@@ -31,6 +31,54 @@ async function requireAuth() {
   return user;
 }
 
+
+export async function GET(request) {
+  try {
+    const user = await requireAuth();
+
+    const products = await prisma.product.findMany({
+      where: {
+        deleted: false,
+      },
+      include: {
+        locations: {
+          where: {
+            deleted: false,
+          },
+          include: {
+            location: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return NextResponse.json(products);
+  } catch (error) {
+    if (error.message === 'Authentication required') {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+    
+    console.error("Error fetching products:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request) {
   try {
     const user = await requireAuth();
@@ -147,37 +195,47 @@ export async function POST(request) {
   }
 }
 
-export async function GET(request) {
+export async function PUT(req) {
   try {
     const user = await requireAuth();
+    const body = await req.json();
+    const { id, softDelete } = body;
 
-    const products = await prisma.product.findMany({
-      where: {
-        deleted: false,
-      },
-      include: {
-        locations: {
-          where: {
-            deleted: false,
-          },
-          include: {
-            location: true,
-          },
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    if (!id) {
+      return NextResponse.json(
+        { error: "Product ID is required" },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json(products);
+    if (softDelete) {
+      await prisma.$transaction(async (tx) => {
+        const existingProduct = await tx.product.findUnique({
+          where: { id }
+        });
+
+        if (!existingProduct) {
+          throw new Error('Product not found');
+        }
+
+        await tx.productLocation.updateMany({
+          where: { productId: id, deleted: false },
+          data: { deleted: true },
+        });
+
+        await tx.product.update({
+          where: { id },
+          data: { deleted: true },
+        });
+      });
+
+      return NextResponse.json({ message: "Product deleted successfully" });
+    }
+
+    return NextResponse.json(
+      { error: "Invalid operation" },
+      { status: 400 }
+    );
   } catch (error) {
     if (error.message === 'Authentication required') {
       return NextResponse.json(
@@ -185,8 +243,15 @@ export async function GET(request) {
         { status: 401 }
       );
     }
-    
-    console.error("Error fetching products:", error);
+
+    if (error.message === 'Product not found') {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      );
+    }
+
+    console.error("Error updating product:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

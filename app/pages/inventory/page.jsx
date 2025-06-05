@@ -5,16 +5,9 @@ import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import { SquarePlus, Trash2, Pen } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
-import {
-  Chip,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
+import { Chip } from "@mui/material";
 import LocationModal from "@/app/components/LocationModal";
+import ConfirmDeleteModal from "@/app/components/ConfirmDeleteModal";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 
 export default function InventoryLocations() {
@@ -52,7 +45,6 @@ export default function InventoryLocations() {
   };
 
   const handleCloseConfirm = () => {
-    if (deleting) return;
     setConfirmOpen(false);
     setDeletingId(null);
   };
@@ -238,34 +230,16 @@ export default function InventoryLocations() {
         onClose={handleCloseModal}
         onSuccess={fetchLocations}
         existingLocations={rows}
-        initialData={initialEditData} // <-- send edit data or null
+        initialData={initialEditData}
       />
 
-      <Dialog
+      <ConfirmDeleteModal
         open={confirmOpen}
         onClose={handleCloseConfirm}
-        disableEscapeKeyDown={deleting}
-      >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this location?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseConfirm} disabled={deleting}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSoftDelete}
-            color="error"
-            variant="contained"
-            disabled={deleting}
-          >
-            {deleting ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleSoftDelete}
+        isDeleting={deleting}
+        message="Are you sure you want to delete this location?"
+      />
     </div>
   );
 }
