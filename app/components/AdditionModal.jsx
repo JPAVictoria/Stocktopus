@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSnackbar } from "../context/SnackbarContext";
+import axios from "axios";
 
 export default function AdditionModal({ open, onClose, product = null }) {
   const [quantity, setQuantity] = useState("");
@@ -23,11 +24,67 @@ export default function AdditionModal({ open, onClose, product = null }) {
   const [availableLocations, setAvailableLocations] = useState([]);
   const { openSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
+  const [fetchingLocations, setFetchingLocations] = useState(false);
+
+  
+  const fetchAllLocations = async () => {
+    try {
+      setFetchingLocations(true);
+      const response = await axios.get("/api/inventory", {
+        withCredentials: true,
+      });
+      
+      
+      const allLocations = response.data.map(loc => ({
+        locationId: loc.id,
+        location: {
+          id: loc.id,
+          name: loc.location 
+        },
+        quantity: 0, 
+        isExisting: false 
+      }));
+
+      
+      if (product && product.originalData?.locations) {
+        const existingLocationIds = product.originalData.locations.map(l => l.locationId);
+        
+        
+        const mergedLocations = allLocations.map(loc => {
+          const existingLocation = product.originalData.locations.find(
+            existing => existing.locationId === loc.locationId
+          );
+          
+          if (existingLocation) {
+            return {
+              ...loc,
+              quantity: existingLocation.quantity,
+              isExisting: true
+            };
+          }
+          return loc;
+        });
+
+        setAvailableLocations(mergedLocations);
+      } else {
+        setAvailableLocations(allLocations);
+      }
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+      openSnackbar("Failed to fetch locations", "error");
+      
+      
+      if (product && product.originalData?.locations) {
+        setAvailableLocations(product.originalData.locations);
+      }
+    } finally {
+      setFetchingLocations(false);
+    }
+  };
 
   useEffect(() => {
-    if (open && product) {
-      const locations = product.originalData?.locations || [];
-      setAvailableLocations(locations);
+    if (open) {
+      fetchAllLocations();
       clearFields();
     } else {
       clearFields();
@@ -39,7 +96,7 @@ export default function AdditionModal({ open, onClose, product = null }) {
     setLocation("");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!quantity || quantity <= 0) {
       openSnackbar("Valid quantity is required", "error");
       return;
@@ -52,26 +109,44 @@ export default function AdditionModal({ open, onClose, product = null }) {
 
     setLoading(true);
 
-    try{
+    try {
+      
+      const response = await axios.post("/api/products/add", {
+        productId: product?.id,
+        locationId: location,
+        quantity: parseInt(quantity),
+      }, {
+        withCredentials: true,
+      });
 
-    console.log("Add operation:", {
-      productId: product?.id,
-      quantity: parseInt(quantity),
-      locationId: location,
-    });
+      const selectedLocation = availableLocations.find(
+        (loc) => loc.locationId === location
+      );
+      
+      openSnackbar(
+        `Successfully added ${quantity} units to ${selectedLocation?.location.name}`,
+        "success"
+      );
 
-    const locationName = availableLocations.find(
-      (loc) => loc.locationId === location
-    )?.location.name;
-    openSnackbar(
-      `Successfully added ${quantity} units to ${locationName}`,
-      "success"
-    );
-
-    clearFields();
-    onClose();
+      clearFields();
+      onClose();
     } catch (error) {
-      openSnackbar("Failed to add product quantity", "error");
+      console.error("Error adding product quantity:", error);
+      
+      if (error.response) {
+        if (error.response.status === 401) {
+          openSnackbar("Authentication required. Please log in.", "error");
+        } else {
+          openSnackbar(
+            `Failed to add quantity: ${error.response.data?.error || "Unknown error"}`,
+            "error"
+          );
+        }
+      } else if (error.request) {
+        openSnackbar("Network error. Please check your connection.", "error");
+      } else {
+        openSnackbar("Failed to add product quantity", "error");
+      }
     } finally {
       setLoading(false);
     }
@@ -134,7 +209,7 @@ export default function AdditionModal({ open, onClose, product = null }) {
             onChange={(e) => setLocation(e.target.value)}
             label="Select Location"
             sx={{ color: "#333333" }}
-            disabled={loading}
+            disabled={loading || fetchingLocations}
             endAdornment={
               location &&
               !loading && (
@@ -150,11 +225,12 @@ export default function AdditionModal({ open, onClose, product = null }) {
             }
           >
             <MenuItem value="" disabled>
-              Choose location to add to
+              {fetchingLocations ? "Loading locations..." : "Choose location to add to"}
             </MenuItem>
             {availableLocations.map((loc) => (
               <MenuItem key={loc.locationId} value={loc.locationId}>
-                {loc.location.name} (Current: {loc.quantity})
+                {loc.location.name} 
+                {loc.isExisting ? ` (Current: ${loc.quantity})` : " (New location)"}
               </MenuItem>
             ))}
           </Select>
@@ -169,12 +245,7 @@ export default function AdditionModal({ open, onClose, product = null }) {
           margin="dense"
           size="small"
           sx={{ mt: 2 }}
-          InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
-          InputProps={{
-            style: { color: "#333333" },
-            inputProps: { min: 1 },
-          }}
-          helperText="Enter the quantity to add to inventory"
+          disabled={loading}
         />
       </DialogContent>
 
@@ -192,6 +263,7 @@ export default function AdditionModal({ open, onClose, product = null }) {
             py: 0.5,
             borderRadius: "8px",
           }}
+          disabled={loading}
         >
           Clear
         </Button>
@@ -211,8 +283,9 @@ export default function AdditionModal({ open, onClose, product = null }) {
               backgroundColor: "#16a34a",
             },
           }}
+          disabled={loading || fetchingLocations}
         >
-          Add
+          {loading ? "Adding..." : "Add"}
         </Button>
       </DialogActions>
     </Dialog>
