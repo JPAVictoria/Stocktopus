@@ -8,6 +8,9 @@ import Image from "next/image";
 import axios from "axios";
 import Navbar from "@/app/components/Navbar";
 import ProductModal from "@/app/components/ProductModal";
+import SubtractModal from "@/app/components/SubtractModal";
+import AdditionModal from "@/app/components/AdditionModal";
+import TransferModal from "@/app/components/TransferModal";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 
 const isValidUrl = (string) => {
@@ -25,6 +28,9 @@ const formatNumberWithCommas = (number) => {
 
 export default function ProductOverview() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [subtractModalOpen, setSubtractModalOpen] = useState(false);
+  const [additionModalOpen, setAdditionModalOpen] = useState(false);
+  const [transferModalOpen, setTransferModalOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -35,6 +41,21 @@ export default function ProductOverview() {
     setSelectedProduct(product);
     setModalMode('update');
     setModalOpen(true);
+  };
+
+  const handleSubtractClick = (product) => {
+    setSelectedProduct(product);
+    setSubtractModalOpen(true);
+  };
+
+  const handleAddClick = (product) => {
+    setSelectedProduct(product);
+    setAdditionModalOpen(true);
+  };
+
+  const handleTransferClick = (product) => {
+    setSelectedProduct(product);
+    setTransferModalOpen(true);
   };
 
   const columns = [
@@ -121,7 +142,7 @@ export default function ProductOverview() {
       headerAlign: "center",
       align: "center",
       sortable: false,
-      renderCell: () => {
+      renderCell: (params) => {
         const colors = {
           add: "rgba(34,197,94,0.15)",
           subtract: "rgba(220,38,38,0.15)",
@@ -144,19 +165,28 @@ export default function ProductOverview() {
 
         return (
           <div className="flex items-center gap-8">
-            <div className="flex flex-col items-center cursor-pointer text-green-600">
+            <div 
+              className="flex flex-col items-center cursor-pointer text-green-600"
+              onClick={() => handleAddClick(params.row)}
+            >
               <div style={iconWrapperStyle(colors.add)}>
                 <Plus size={22} />
               </div>
               <span className="text-xs">Add</span>
             </div>
-            <div className="flex flex-col items-center cursor-pointer text-red-600">
+            <div 
+              className="flex flex-col items-center cursor-pointer text-red-600"
+              onClick={() => handleSubtractClick(params.row)}
+            >
               <div style={iconWrapperStyle(colors.subtract)}>
                 <Minus size={22} />
               </div>
               <span className="text-xs">Subtract</span>
             </div>
-            <div className="flex flex-col items-center cursor-pointer text-cyan-600">
+            <div 
+              className="flex flex-col items-center cursor-pointer text-cyan-600"
+              onClick={() => handleTransferClick(params.row)}
+            >
               <div style={iconWrapperStyle(colors.transfer)}>
                 <MoveRight size={22} />
               </div>
@@ -248,6 +278,24 @@ export default function ProductOverview() {
     fetchProducts();
   };
 
+  const handleSubtractModalClose = () => {
+    setSubtractModalOpen(false);
+    setSelectedProduct(null);
+    fetchProducts();
+  };
+
+  const handleAdditionModalClose = () => {
+    setAdditionModalOpen(false);
+    setSelectedProduct(null);
+    fetchProducts();
+  };
+
+  const handleTransferModalClose = () => {
+    setTransferModalOpen(false);
+    setSelectedProduct(null);
+    fetchProducts();
+  };
+
   const handleAddProduct = () => {
     setSelectedProduct(null);
     setModalMode('create');
@@ -308,6 +356,24 @@ export default function ProductOverview() {
         onClose={handleModalClose}
         onSubmit={() => {}}
         mode={modalMode}
+        product={selectedProduct}
+      />
+
+      <SubtractModal
+        open={subtractModalOpen}
+        onClose={handleSubtractModalClose}
+        product={selectedProduct}
+      />
+
+      <AdditionModal
+        open={additionModalOpen}
+        onClose={handleAdditionModalClose}
+        product={selectedProduct}
+      />
+
+      <TransferModal
+        open={transferModalOpen}
+        onClose={handleTransferModalClose}
         product={selectedProduct}
       />
     </div>
