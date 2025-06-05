@@ -22,6 +22,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
   const [location, setLocation] = useState("");
   const [availableLocations, setAvailableLocations] = useState([]);
   const { openSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState("");
 
   useEffect(() => {
     if (open && product) {
@@ -49,28 +50,46 @@ export default function SubtractModal({ open, onClose, product = null }) {
       return;
     }
 
+    setLoading(true);
+
     const maxAvailable = getMaxQuantityForLocation();
     if (parseInt(quantity) > maxAvailable) {
-      openSnackbar(`Cannot subtract ${quantity} items. Only ${maxAvailable} available at this location.`, "error");
+      openSnackbar(
+        `Cannot subtract ${quantity} items. Only ${maxAvailable} available at this location.`,
+        "error"
+      );
       return;
     }
 
-    console.log("Subtract operation:", {
-      productId: product?.id,
-      quantity: parseInt(quantity),
-      locationId: location,
-    });
+    try {
+      console.log("Subtract operation:", {
+        productId: product?.id,
+        quantity: parseInt(quantity),
+        locationId: location,
+      });
 
-    const locationName = availableLocations.find(loc => loc.locationId === location)?.location.name;
-    openSnackbar(`Successfully subtracted ${quantity} units from ${locationName}`, "success");
+      const locationName = availableLocations.find(
+        (loc) => loc.locationId === location
+      )?.location.name;
+      openSnackbar(
+        `Successfully subtracted ${quantity} units from ${locationName}`,
+        "success"
+      );
 
-    clearFields();
-    onClose();
+      clearFields();
+      onClose();
+    } catch (error) {
+      openSnackbar("Failed to subtract product quantity", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getMaxQuantityForLocation = () => {
     if (!location) return 0;
-    const selectedLocation = availableLocations.find(loc => loc.locationId === location);
+    const selectedLocation = availableLocations.find(
+      (loc) => loc.locationId === location
+    );
     return selectedLocation?.quantity || 0;
   };
 
@@ -109,8 +128,12 @@ export default function SubtractModal({ open, onClose, product = null }) {
       <DialogContent dividers sx={{ px: 2.5, py: 2.5 }}>
         {product && (
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-gray-800 mb-1">Product: {product.name}</h4>
-            <p className="text-sm text-gray-600">Total Available: {product.totalQuantity}</p>
+            <h4 className="font-medium text-gray-800 mb-1">
+              Product: {product.name}
+            </h4>
+            <p className="text-sm text-gray-600">
+              Total Available: {product.totalQuantity}
+            </p>
           </div>
         )}
 
@@ -127,6 +150,20 @@ export default function SubtractModal({ open, onClose, product = null }) {
             onChange={(e) => setLocation(e.target.value)}
             label="Select Location"
             sx={{ color: "#333333" }}
+            disabled={loading}
+            endAdornment={
+              location &&
+              !loading && (
+                <IconButton
+                  size="small"
+                  onClick={() => setLocation("")}
+                  aria-label="Clear inventory location"
+                  sx={{ mr: 1, transform: "translateX(-4px)" }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              )
+            }
           >
             <MenuItem value="" disabled>
               Choose location to subtract from
@@ -151,12 +188,16 @@ export default function SubtractModal({ open, onClose, product = null }) {
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
           InputProps={{
             style: { color: "#333333" },
-            inputProps: { 
-              min: 1, 
-              max: getMaxQuantityForLocation()
-            }
+            inputProps: {
+              min: 1,
+              max: getMaxQuantityForLocation(),
+            },
           }}
-          helperText={location ? `Max available: ${getMaxQuantityForLocation()}` : "Select location first"}
+          helperText={
+            location
+              ? `Max available: ${getMaxQuantityForLocation()}`
+              : "Select location first"
+          }
         />
       </DialogContent>
 

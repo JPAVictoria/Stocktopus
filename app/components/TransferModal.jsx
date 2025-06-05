@@ -23,6 +23,7 @@ export default function TransferModal({ open, onClose, product = null }) {
   const [toLocation, setToLocation] = useState("");
   const [availableLocations, setAvailableLocations] = useState([]);
   const { openSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState("");
 
   useEffect(() => {
     if (open && product) {
@@ -57,38 +58,60 @@ export default function TransferModal({ open, onClose, product = null }) {
     }
 
     if (fromLocation === toLocation) {
-      openSnackbar("Source and destination locations cannot be the same", "error");
+      openSnackbar(
+        "Source and destination locations cannot be the same",
+        "error"
+      );
       return;
     }
+
+    setLoading(true);
 
     const maxAvailable = getMaxQuantityForLocation(fromLocation);
     if (parseInt(quantity) > maxAvailable) {
-      openSnackbar(`Cannot transfer ${quantity} items. Only ${maxAvailable} available at source location.`, "error");
+      openSnackbar(
+        `Cannot transfer ${quantity} items. Only ${maxAvailable} available at source location.`,
+        "error"
+      );
       return;
     }
 
-    console.log("Transfer operation:", {
-      productId: product?.id,
-      quantity: parseInt(quantity),
-      fromLocationId: fromLocation,
-      toLocationId: toLocation,
-    });
+    try {
+      console.log("Transfer operation:", {
+        productId: product?.id,
+        quantity: parseInt(quantity),
+        fromLocationId: fromLocation,
+        toLocationId: toLocation,
+      });
 
-    const fromLocationName = availableLocations.find(loc => loc.locationId === fromLocation)?.location.name;
-    const toLocationName = availableLocations.find(loc => loc.locationId === toLocation)?.location.name;
-    openSnackbar(`Successfully transferred ${quantity} units from ${fromLocationName} to ${toLocationName}`, "success");
+      const fromLocationName = availableLocations.find(
+        (loc) => loc.locationId === fromLocation
+      )?.location.name;
+      const toLocationName = availableLocations.find(
+        (loc) => loc.locationId === toLocation
+      )?.location.name;
+      openSnackbar(
+        `Successfully transferred ${quantity} units from ${fromLocationName} to ${toLocationName}`,
+        "success"
+      );
 
-    clearFields();
-    onClose();
+      clearFields();
+      onClose();
+    } catch (error) {
+      openSnackbar("Failed to transfer product quantity", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getMaxQuantityForLocation = (locationId) => {
     if (!locationId) return 0;
-    const selectedLocation = availableLocations.find(loc => loc.locationId === locationId);
+    const selectedLocation = availableLocations.find(
+      (loc) => loc.locationId === locationId
+    );
     return selectedLocation?.quantity || 0;
   };
 
-  // Get available destination locations (all locations that exist in the product)
   const getDestinationLocations = () => {
     return availableLocations;
   };
@@ -128,8 +151,12 @@ export default function TransferModal({ open, onClose, product = null }) {
       <DialogContent dividers sx={{ px: 2.5, py: 2.5 }}>
         {product && (
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-gray-800 mb-1">Product: {product.name}</h4>
-            <p className="text-sm text-gray-600">Total Available: {product.totalQuantity}</p>
+            <h4 className="font-medium text-gray-800 mb-1">
+              Product: {product.name}
+            </h4>
+            <p className="text-sm text-gray-600">
+              Total Available: {product.totalQuantity}
+            </p>
           </div>
         )}
 
@@ -178,7 +205,7 @@ export default function TransferModal({ open, onClose, product = null }) {
                 Choose destination location
               </MenuItem>
               {getDestinationLocations()
-                .filter(loc => loc.locationId !== fromLocation)
+                .filter((loc) => loc.locationId !== fromLocation)
                 .map((loc) => (
                   <MenuItem key={loc.locationId} value={loc.locationId}>
                     {loc.location.name} (Current: {loc.quantity})
@@ -200,14 +227,16 @@ export default function TransferModal({ open, onClose, product = null }) {
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
           InputProps={{
             style: { color: "#333333" },
-            inputProps: { 
+            inputProps: {
               min: 1,
-              max: getMaxQuantityForLocation(fromLocation)
-            }
+              max: getMaxQuantityForLocation(fromLocation),
+            },
           }}
           helperText={
-            fromLocation 
-              ? `Max available to transfer: ${getMaxQuantityForLocation(fromLocation)}` 
+            fromLocation
+              ? `Max available to transfer: ${getMaxQuantityForLocation(
+                  fromLocation
+                )}`
               : "Select source location first"
           }
           disabled={!fromLocation}
@@ -215,10 +244,26 @@ export default function TransferModal({ open, onClose, product = null }) {
 
         {fromLocation && toLocation && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <h5 className="font-medium text-blue-800 mb-2">Transfer Summary:</h5>
+            <h5 className="font-medium text-blue-800 mb-2">
+              Transfer Summary:
+            </h5>
             <div className="text-sm text-blue-700">
-              <p>From: {availableLocations.find(loc => loc.locationId === fromLocation)?.location.name}</p>
-              <p>To: {availableLocations.find(loc => loc.locationId === toLocation)?.location.name}</p>
+              <p>
+                From:{" "}
+                {
+                  availableLocations.find(
+                    (loc) => loc.locationId === fromLocation
+                  )?.location.name
+                }
+              </p>
+              <p>
+                To:{" "}
+                {
+                  availableLocations.find(
+                    (loc) => loc.locationId === toLocation
+                  )?.location.name
+                }
+              </p>
               {quantity && <p>Quantity: {quantity} units</p>}
             </div>
           </div>

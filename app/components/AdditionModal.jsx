@@ -22,6 +22,7 @@ export default function AdditionModal({ open, onClose, product = null }) {
   const [location, setLocation] = useState("");
   const [availableLocations, setAvailableLocations] = useState([]);
   const { openSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open && product) {
@@ -49,17 +50,31 @@ export default function AdditionModal({ open, onClose, product = null }) {
       return;
     }
 
+    setLoading(true);
+
+    try{
+
     console.log("Add operation:", {
       productId: product?.id,
       quantity: parseInt(quantity),
       locationId: location,
     });
 
-    const locationName = availableLocations.find(loc => loc.locationId === location)?.location.name;
-    openSnackbar(`Successfully added ${quantity} units to ${locationName}`, "success");
+    const locationName = availableLocations.find(
+      (loc) => loc.locationId === location
+    )?.location.name;
+    openSnackbar(
+      `Successfully added ${quantity} units to ${locationName}`,
+      "success"
+    );
 
     clearFields();
     onClose();
+    } catch (error) {
+      openSnackbar("Failed to add product quantity", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -97,8 +112,12 @@ export default function AdditionModal({ open, onClose, product = null }) {
       <DialogContent dividers sx={{ px: 2.5, py: 2.5 }}>
         {product && (
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-gray-800 mb-1">Product: {product.name}</h4>
-            <p className="text-sm text-gray-600">Current Total: {product.totalQuantity}</p>
+            <h4 className="font-medium text-gray-800 mb-1">
+              Product: {product.name}
+            </h4>
+            <p className="text-sm text-gray-600">
+              Current Total: {product.totalQuantity}
+            </p>
           </div>
         )}
 
@@ -115,6 +134,20 @@ export default function AdditionModal({ open, onClose, product = null }) {
             onChange={(e) => setLocation(e.target.value)}
             label="Select Location"
             sx={{ color: "#333333" }}
+            disabled={loading}
+            endAdornment={
+              location &&
+              !loading && (
+                <IconButton
+                  size="small"
+                  onClick={() => setLocation("")}
+                  aria-label="Clear inventory location"
+                  sx={{ mr: 1, transform: "translateX(-4px)" }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              )
+            }
           >
             <MenuItem value="" disabled>
               Choose location to add to
@@ -139,7 +172,7 @@ export default function AdditionModal({ open, onClose, product = null }) {
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
           InputProps={{
             style: { color: "#333333" },
-            inputProps: { min: 1 }
+            inputProps: { min: 1 },
           }}
           helperText="Enter the quantity to add to inventory"
         />
