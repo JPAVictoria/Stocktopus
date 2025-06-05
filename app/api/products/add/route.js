@@ -65,7 +65,7 @@ export async function POST(request) {
         data: { quantity: totalQuantity._sum.quantity || 0 },
       });
 
-      // Get location name for response
+      
       const location = await tx.location.findUnique({
         where: { id: locationId },
         select: { name: true },
