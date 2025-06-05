@@ -11,39 +11,36 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 
 import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomizeRounded';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import ArtTrackRoundedIcon from '@mui/icons-material/ArtTrackRounded';
+import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
+import WarehouseRoundedIcon from '@mui/icons-material/WarehouseRounded';
 const items = [
   {
     icon: <DashboardCustomizeRoundedIcon />,
-    title: 'Admin Dashboard',
+    title: 'Dashboard',
     description:
-      'The Admin Dashboard allows administrators to manage recipes, categories, and users, with options to add, edit, or delete content and view usage statistics.',
+      'Provides a comprehensive overview of the company’s inventory, including key metrics and summaries for quick insights.',
       
-    imageLight: `url("/AdminDashboard.jpg")`,
-    imageDark: `url("/AdminDashboard.jpg")`,
-    // imageLight: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/dash-light.png")`,
-    // imageDark: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/dash-dark.png")`,
+    imageLight: `url("/dash.png")`,
+    imageDark: `url("/dash.png")`,
+    
   },
   {
-    icon: <DashboardRoundedIcon />,
-    title: 'Viewer Dashboard',
+    icon: <InventoryRoundedIcon />,
+    title: 'Product Inventory',
     description:
-      'The Viewer Dashboard provides users with a personalized experience where they can browse, search, and filter recipes based on category, ingredients, or preparation time.',
-    imageLight: `url("/ViewerDashboard.jpg")`,
-    imageDark: `url("/ViewerDashboard.jpg")`,
-    // imageLight: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/mobile-light.png")`,
-    // imageDark: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/mobile-dark.png")`,
+      'Manages detailed records of all products, including product name, quantities, location, SRP, and editing actions.',
+    imageLight: `url("/inventory.png")`,
+    imageDark: `url("/inventory.png")`,
+    
   },
   {
-    icon: <ArtTrackRoundedIcon />,
-    title: 'Specific Content Page',
+    icon: <WarehouseRoundedIcon />,
+    title: 'Inventory Locations',
     description:
-      'Each recipe has its own dedicated content page featuring detailed instructions, ingredient lists, images, and options for social sharing and user feedback.',
-    imageLight: `url("/Content.jpg")`,
-    imageDark: `url("/Content.jpg")`,
-    // imageLight: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/devices-light.png")`,
-    // imageDark: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/devices-dark.png")`,
+      'Tracks inventory storage across multiple locations, including associated products and creation dates, to optimize stock management and logistics.',
+    imageLight: `url("/loc.png")`,
+    imageDark: `url("/loc.png")`,
+    
   },
 ];
 
@@ -160,14 +157,14 @@ export default function Features() {
           gutterBottom
           sx={{ color: 'text.primary' }}
         >
-          Foodopedia features
+          Get Organized with Stocktopus!
         </Typography>
         <Typography
           variant="body1"
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
-          This website is built with the goal of making, managing, and viewing delectable recipes easy and enjoyable, 
-          while also providing accessible and seamless experience for both admins and everyday users. It offers:
+          Stocktopus brings you a smart, seamless, and user-friendly inventory management experience that takes the hassle out of tracking stock. 
+          Whether you're managing one warehouse or many, Stocktopus helps you stay on top of it all. Here’s what you can look forward to:
         </Typography>
       </Box>
       <Box
@@ -256,7 +253,7 @@ export default function Features() {
             <Box
               sx={(theme) => ({
                 m: 'auto',
-                width: '100%',
+                width: '95%',
                 height: '80%',
                 backgroundSize: '100% 100%',
                 backgroundRepeat: 'no-repeat',
