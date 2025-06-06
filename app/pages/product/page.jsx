@@ -99,7 +99,6 @@ export default function ProductOverview() {
         />
       </div>
 
-      {/* All Modals */}
       <ProductModal
         open={modals.modalOpen}
         onClose={() => handleModalClose(modals.closeProductModal)}

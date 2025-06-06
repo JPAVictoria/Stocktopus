@@ -16,18 +16,42 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSnackbar } from "../context/SnackbarContext";
+import axios from "axios";
 
 export default function SubtractModal({ open, onClose, product = null }) {
   const [quantity, setQuantity] = useState("");
   const [location, setLocation] = useState("");
   const [availableLocations, setAvailableLocations] = useState([]);
   const { openSnackbar } = useSnackbar();
-  const [loading, setLoading] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fetchingLocations, setFetchingLocations] = useState(false);
+
+  const fetchExistingLocations = async () => {
+    try {
+      setFetchingLocations(true);
+      
+      // For subtract, we only show locations where the product actually exists
+      if (product && product.originalData?.locations) {
+        // Filter only locations that have quantity > 0
+        const locationsWithStock = product.originalData.locations.filter(
+          loc => loc.quantity > 0 && !loc.deleted
+        );
+        setAvailableLocations(locationsWithStock);
+      } else {
+        setAvailableLocations([]);
+      }
+    } catch (error) {
+      console.error("Error processing locations:", error);
+      openSnackbar("Failed to load locations", "error");
+      setAvailableLocations([]);
+    } finally {
+      setFetchingLocations(false);
+    }
+  };
 
   useEffect(() => {
-    if (open && product) {
-      const locations = product.originalData?.locations || [];
-      setAvailableLocations(locations);
+    if (open) {
+      fetchExistingLocations();
       clearFields();
     } else {
       clearFields();
@@ -39,7 +63,15 @@ export default function SubtractModal({ open, onClose, product = null }) {
     setLocation("");
   };
 
-  const handleSubmit = () => {
+  const getMaxQuantityForLocation = () => {
+    if (!location) return 0;
+    const selectedLocation = availableLocations.find(
+      (loc) => loc.locationId === location
+    );
+    return selectedLocation?.quantity || 0;
+  };
+
+  const handleSubmit = async () => {
     if (!quantity || quantity <= 0) {
       openSnackbar("Valid quantity is required", "error");
       return;
@@ -50,8 +82,6 @@ export default function SubtractModal({ open, onClose, product = null }) {
       return;
     }
 
-    setLoading(true);
-
     const maxAvailable = getMaxQuantityForLocation();
     if (parseInt(quantity) > maxAvailable) {
       openSnackbar(
@@ -61,36 +91,48 @@ export default function SubtractModal({ open, onClose, product = null }) {
       return;
     }
 
+    setLoading(true);
+
     try {
-      console.log("Subtract operation:", {
+      const response = await axios.post("/api/products/subtract", {
         productId: product?.id,
-        quantity: parseInt(quantity),
         locationId: location,
+        quantity: parseInt(quantity),
+      }, {
+        withCredentials: true,
       });
 
-      const locationName = availableLocations.find(
+      const selectedLocation = availableLocations.find(
         (loc) => loc.locationId === location
-      )?.location.name;
+      );
+      
       openSnackbar(
-        `Successfully subtracted ${quantity} units from ${locationName}`,
+        `Successfully subtracted ${quantity} units from ${selectedLocation?.location.name}`,
         "success"
       );
 
       clearFields();
       onClose();
     } catch (error) {
-      openSnackbar("Failed to subtract product quantity", "error");
+      console.error("Error subtracting product quantity:", error);
+      
+      if (error.response) {
+        if (error.response.status === 401) {
+          openSnackbar("Authentication required. Please log in.", "error");
+        } else {
+          openSnackbar(
+            `Failed to subtract quantity: ${error.response.data?.error || "Unknown error"}`,
+            "error"
+          );
+        }
+      } else if (error.request) {
+        openSnackbar("Network error. Please check your connection.", "error");
+      } else {
+        openSnackbar("Failed to subtract product quantity", "error");
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMaxQuantityForLocation = () => {
-    if (!location) return 0;
-    const selectedLocation = availableLocations.find(
-      (loc) => loc.locationId === location
-    );
-    return selectedLocation?.quantity || 0;
   };
 
   return (
@@ -114,7 +156,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
           px: 2,
         }}
       >
-        Subtract Product
+        Subtract Product Quantity
         <IconButton
           onClick={onClose}
           size="small"
@@ -132,7 +174,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
               Product: {product.name}
             </h4>
             <p className="text-sm text-gray-600">
-              Total Available: {product.totalQuantity}
+              Current Total: {product.totalQuantity}
             </p>
           </div>
         )}
@@ -150,7 +192,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
             onChange={(e) => setLocation(e.target.value)}
             label="Select Location"
             sx={{ color: "#333333" }}
-            disabled={loading}
+            disabled={loading || fetchingLocations}
             endAdornment={
               location &&
               !loading && (
@@ -166,7 +208,9 @@ export default function SubtractModal({ open, onClose, product = null }) {
             }
           >
             <MenuItem value="" disabled>
-              Choose location to subtract from
+              {fetchingLocations ? "Loading locations..." : 
+               availableLocations.length === 0 ? "No locations with stock available" :
+               "Choose location to subtract from"}
             </MenuItem>
             {availableLocations.map((loc) => (
               <MenuItem key={loc.locationId} value={loc.locationId}>
@@ -198,6 +242,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
               ? `Max available: ${getMaxQuantityForLocation()}`
               : "Select location first"
           }
+          disabled={loading}
         />
       </DialogContent>
 
@@ -215,6 +260,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
             py: 0.5,
             borderRadius: "8px",
           }}
+          disabled={loading}
         >
           Clear
         </Button>
@@ -234,8 +280,9 @@ export default function SubtractModal({ open, onClose, product = null }) {
               backgroundColor: "#b91c1c",
             },
           }}
+          disabled={loading || fetchingLocations || availableLocations.length === 0}
         >
-          Subtract
+          {loading ? "Subtracting..." : "Subtract"}
         </Button>
       </DialogActions>
     </Dialog>
