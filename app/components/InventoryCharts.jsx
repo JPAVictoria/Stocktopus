@@ -95,6 +95,17 @@ export default function InventoryCharts() {
                   marginBottom: 0,
                   paddingBottom: 0,
                 },
+                "& .MuiLineElement-root": {
+                  strokeWidth: 3,
+                  filter: "drop-shadow(0 2px 4px rgba(0, 200, 83, 0.3))",
+                },
+                "& .MuiMarkElement-root": {
+                  fill: "#00C853",
+                  stroke: "#ffffff",
+                  strokeWidth: 2,
+                  r: 4,
+                  filter: "drop-shadow(0 2px 4px rgba(0, 200, 83, 0.4))",
+                },
               }}
             />
           </div>
@@ -138,7 +149,7 @@ export default function InventoryCharts() {
               {...inventoryLineData}
               width={280}
               height={80}
-              colors={["#00C853"]}
+              colors={["#6366f1"]}
               xAxis={[
                 {
                   scaleType: "point",
@@ -162,6 +173,17 @@ export default function InventoryCharts() {
                 "& svg": {
                   marginBottom: 0,
                   paddingBottom: 0,
+                },
+                "& .MuiLineElement-root": {
+                  strokeWidth: 3,
+                  filter: "drop-shadow(0 2px 4px rgba(99, 102, 241, 0.3))",
+                },
+                "& .MuiMarkElement-root": {
+                  fill: "#6366f1",
+                  stroke: "#ffffff",
+                  strokeWidth: 2,
+                  r: 4,
+                  filter: "drop-shadow(0 2px 4px rgba(99, 102, 241, 0.4))",
                 },
               }}
             />
