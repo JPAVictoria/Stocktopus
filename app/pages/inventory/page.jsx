@@ -87,6 +87,7 @@ export default function InventoryLocations() {
       headerAlign: "center",
       align: "center",
     },
+
     {
       field: "products",
       headerName: "Associated Products",
@@ -94,19 +95,23 @@ export default function InventoryLocations() {
       align: "center",
       flex: 0.8,
       renderCell: (params) => (
-        <div className="flex items-center gap-2">
-          <span>{params.value}</span>
-          <Chip
-            label={params.row.productCount}
-            size="small"
-            sx={{
-              backgroundColor: "rgba(34,197,94,0.2)",
-              color: "rgb(34, 197, 94)",
-              fontWeight: 500,
-              fontSize: "0.75rem",
-              height: "20px",
-            }}
-          />
+        <div className="flex flex-col items-center gap-1 py-2">
+          {params.row.productDetails?.map((product, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <span className="text-sm">{product.name}</span>
+              <Chip
+                label={product.quantity}
+                size="small"
+                sx={{
+                  backgroundColor: "rgba(34,197,94,0.2)",
+                  color: "rgb(34, 197, 94)",
+                  fontWeight: 500,
+                  fontSize: "0.75rem",
+                  height: "20px",
+                }}
+              />
+            </div>
+          )) || <span className="text-gray-500 text-sm">No products</span>}
         </div>
       ),
     },
@@ -197,7 +202,7 @@ export default function InventoryLocations() {
         <DataGrid
           rows={rows}
           columns={columns}
-          rowHeight={80}
+          rowHeight={100} 
           pageSizeOptions={[5, 10]}
           disableRowSelectionOnClick
           loading={loading}
