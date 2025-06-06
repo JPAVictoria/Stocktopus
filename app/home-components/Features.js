@@ -164,7 +164,7 @@ export default function Features() {
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
           Stocktopus brings you a smart, seamless, and user-friendly inventory management experience that takes the hassle out of tracking stock. 
-          Whether you're managing one warehouse or many, Stocktopus helps you stay on top of it all. Here’s what you can look forward to:
+          Whether you&apos;re managing one warehouse or many, Stocktopus helps you stay on top of it all. Here’s what you can look forward to:
         </Typography>
       </Box>
       <Box
