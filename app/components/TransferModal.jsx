@@ -16,14 +16,15 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSnackbar } from "../context/SnackbarContext";
+import axios from "axios";
 
-export default function TransferModal({ open, onClose, product = null }) {
+export default function TransferModal({ open, onClose, product = null, onTransferSuccess }) {
   const [quantity, setQuantity] = useState("");
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
   const [availableLocations, setAvailableLocations] = useState([]);
   const { openSnackbar } = useSnackbar();
-  const [loading, setLoading] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open && product) {
@@ -41,7 +42,7 @@ export default function TransferModal({ open, onClose, product = null }) {
     setToLocation("");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!quantity || quantity <= 0) {
       openSnackbar("Valid quantity is required", "error");
       return;
@@ -65,8 +66,6 @@ export default function TransferModal({ open, onClose, product = null }) {
       return;
     }
 
-    setLoading(true);
-
     const maxAvailable = getMaxQuantityForLocation(fromLocation);
     if (parseInt(quantity) > maxAvailable) {
       openSnackbar(
@@ -76,29 +75,51 @@ export default function TransferModal({ open, onClose, product = null }) {
       return;
     }
 
+    setLoading(true);
+
     try {
-      console.log("Transfer operation:", {
+      const transferData = {
         productId: product?.id,
         quantity: parseInt(quantity),
         fromLocationId: fromLocation,
         toLocationId: toLocation,
+      };
+
+      console.log("Transfer operation:", transferData);
+
+      const response = await axios.post('/api/products/transfer', transferData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true
       });
 
-      const fromLocationName = availableLocations.find(
-        (loc) => loc.locationId === fromLocation
-      )?.location.name;
-      const toLocationName = availableLocations.find(
-        (loc) => loc.locationId === toLocation
-      )?.location.name;
-      openSnackbar(
-        `Successfully transferred ${quantity} units from ${fromLocationName} to ${toLocationName}`,
-        "success"
-      );
+      if (response.data) {
+        const fromLocationName = availableLocations.find(
+          (loc) => loc.locationId === fromLocation
+        )?.location.name;
+        const toLocationName = availableLocations.find(
+          (loc) => loc.locationId === toLocation
+        )?.location.name;
+        
+        openSnackbar(
+          `Successfully transferred ${quantity} units from ${fromLocationName} to ${toLocationName}`,
+          "success"
+        );
 
-      clearFields();
-      onClose();
+        
+        if (onTransferSuccess) {
+          onTransferSuccess(response.data.product);
+        }
+
+        clearFields();
+        onClose();
+      }
     } catch (error) {
-      openSnackbar("Failed to transfer product quantity", "error");
+      console.error("Transfer error:", error);
+      
+      const errorMessage = error.response?.data?.error || "Failed to transfer product quantity";
+      openSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -143,6 +164,7 @@ export default function TransferModal({ open, onClose, product = null }) {
           size="small"
           aria-label="close"
           sx={{ color: "#ffffff" }}
+          disabled={loading}
         >
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -174,6 +196,7 @@ export default function TransferModal({ open, onClose, product = null }) {
               onChange={(e) => setFromLocation(e.target.value)}
               label="From Location"
               sx={{ color: "#333333" }}
+              disabled={loading}
             >
               <MenuItem value="" disabled>
                 Choose source location
@@ -199,7 +222,7 @@ export default function TransferModal({ open, onClose, product = null }) {
               onChange={(e) => setToLocation(e.target.value)}
               label="To Location"
               sx={{ color: "#333333" }}
-              disabled={!fromLocation}
+              disabled={!fromLocation || loading}
             >
               <MenuItem value="" disabled>
                 Choose destination location
@@ -224,6 +247,7 @@ export default function TransferModal({ open, onClose, product = null }) {
           margin="dense"
           size="small"
           sx={{ mt: 2 }}
+          disabled={loading}
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
           InputProps={{
             style: { color: "#333333" },
@@ -232,42 +256,7 @@ export default function TransferModal({ open, onClose, product = null }) {
               max: getMaxQuantityForLocation(fromLocation),
             },
           }}
-          helperText={
-            fromLocation
-              ? `Max available to transfer: ${getMaxQuantityForLocation(
-                  fromLocation
-                )}`
-              : "Select source location first"
-          }
-          disabled={!fromLocation}
         />
-
-        {fromLocation && toLocation && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <h5 className="font-medium text-blue-800 mb-2">
-              Transfer Summary:
-            </h5>
-            <div className="text-sm text-blue-700">
-              <p>
-                From:{" "}
-                {
-                  availableLocations.find(
-                    (loc) => loc.locationId === fromLocation
-                  )?.location.name
-                }
-              </p>
-              <p>
-                To:{" "}
-                {
-                  availableLocations.find(
-                    (loc) => loc.locationId === toLocation
-                  )?.location.name
-                }
-              </p>
-              {quantity && <p>Quantity: {quantity} units</p>}
-            </div>
-          </div>
-        )}
       </DialogContent>
 
       <DialogActions sx={{ px: 2.5, py: 1.5 }}>
@@ -275,6 +264,7 @@ export default function TransferModal({ open, onClose, product = null }) {
           onClick={clearFields}
           variant="outlined"
           size="small"
+          disabled={loading}
           sx={{
             color: "#333333",
             borderColor: "#333333",
@@ -291,6 +281,7 @@ export default function TransferModal({ open, onClose, product = null }) {
           onClick={handleSubmit}
           variant="contained"
           size="small"
+          disabled={loading}
           sx={{
             backgroundColor: "#06b6d4",
             color: "#ffffff",
@@ -302,9 +293,12 @@ export default function TransferModal({ open, onClose, product = null }) {
             "&:hover": {
               backgroundColor: "#0891b2",
             },
+            "&:disabled": {
+              backgroundColor: "#94a3b8",
+            },
           }}
         >
-          Transfer
+          {loading ? "Transferring..." : "Transfer"}
         </Button>
       </DialogActions>
     </Dialog>
