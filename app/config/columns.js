@@ -1,6 +1,7 @@
 import ProductImage from '@/app/components/ProductImage';
 import ActionButtons from '@/app/components/ProductActionButtons';
 import { formatNumberWithCommas } from '@/app/utils/helpers';
+import { Chip } from '@mui/material';
 
 export const createColumns = (handlers) => [
   {
@@ -35,27 +36,32 @@ export const createColumns = (handlers) => [
     flex: 1,
     renderCell: (params) => {
       
-      let locations = [];
+      const locationData = params.row.originalData?.locations || [];
       
-      if (Array.isArray(params.value)) {
-        
-        locations = params.value;
-      } else if (typeof params.value === 'string') {
-        
-        locations = params.value.split(',').map(loc => loc.trim());
-      } else if (params.row.locations && Array.isArray(params.row.locations)) {
-        
-        locations = params.row.locations;
-      } else {
-        
-        locations = [params.value || 'No location'];
+      if (locationData.length === 0) {
+        return (
+          <div className="text-[#333333] flex items-center justify-center h-full">
+            <span className="text-gray-500 text-sm">No location</span>
+          </div>
+        );
       }
 
       return (
-        <div className="text-[#333333] flex flex-col items-center justify-center h-full py-2">
-          {locations.map((location, index) => (
-            <div key={index} className="text-sm leading-tight mb-2">
-              {location}
+        <div className="flex flex-col items-center gap-1 py-3">
+          {locationData.map((locationInfo, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <span className="text-sm">{locationInfo.location.name}</span>
+              <Chip
+                label={locationInfo.quantity}
+                size="small"
+                sx={{
+                  backgroundColor: "rgba(34,197,94,0.2)",
+                  color: "rgb(34, 197, 94)",
+                  fontWeight: 500,
+                  fontSize: "0.75rem",
+                  height: "20px",
+                }}
+              />
             </div>
           ))}
         </div>
