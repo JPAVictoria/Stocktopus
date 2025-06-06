@@ -18,58 +18,59 @@ import Looks6RoundedIcon from '@mui/icons-material/Looks6Rounded';
 const adminitems = [
   {
     icon: <LooksOneRoundedIcon />,
-    title: 'Navigate',
+    title: '🆕 Create Product',
     description: (
       <>
-        Begin by accessing the <b>Contents</b> page from your admin dashboard. Our product effortlessly adjusts to your needs, boosting <strong>efficiency</strong> and simplifying your tasks.
+        Register a <strong>new product</strong> by entering its name, image, quantity, price, and inventory location.
+
+
       </>
     ),
   },
   {
     icon: <LooksTwoRoundedIcon />,
-    title: 'Create',
+    title: '📦 Create Inventory',
     description: (
       <>
-        Click the <strong>create</strong> button to start a new post. 
+        Set up <strong>warehouses</strong> or <strong>storage locations</strong> to organize where your products are kept.
       </>
     ),
   },
   {
     icon: <Looks3RoundedIcon />,
-    title: 'Enter Details',
+    title: '➕ Add Product',
     description: (
       <>
-        Fill in all required fields, including title, description, category, and any relevant tags.
+        Add <strong>new stock</strong> to a specific location to keep your inventory updated.
       </>
     ),
   },
   {
     icon: <Looks4RoundedIcon />,
-    title: 'Add Image',
+    title: '➖ Subtract Product',
     description: (
       <>
-        To include an image, paste the <strong>web address (URL)</strong> of an existing image hosted online. Make sure the link is publicly accessible.
+        <strong>Reduce</strong> stock quantities for sales, damages, or losses to maintain accuracy.
       </>
     ),
   },
   {
     icon: <Looks5RoundedIcon />,
-    title: 'Publish or Save as Draft',
+    title: '🔁 Transfer Product',
     description: (
       <>
         
-            o	To make the post visible on the <strong>viewer side</strong>, select <strong>Publish</strong>.<br></br>
-            o	To keep the post private for now, choose <strong>Save as Draft</strong>.
+            <strong>Move stock</strong> between locations to manage inventory across branches easily.
         
       </>
     ),
   },
   {
     icon: <Looks6RoundedIcon />,
-    title: 'Monitor Engagement',
+    title: '✏️ Update Product',
     description: (
       <>
-        To review viewer feedback and ratings, navigate to the <strong>Admin Dashboard</strong> where real-time insights are available.
+        <strong>Edit</strong> product details or correct inventory info to keep records accurate.
       </>
     ),
   },
@@ -102,11 +103,10 @@ export default function Adminsteps() {
           }}
         >
           <Typography component="h2" variant="h4" gutterBottom>
-            Admin Guide: How to Publish Content
+            🐙 Welcome to Stocktopus: Smarter Inventory Starts Here
           </Typography>
           <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-            Easily manage and share your food-related content using our streamlined publishing system. 
-            Follow these simple steps to get your content from draft to live in minutes.
+            A simple, powerful system to organize, track, and optimize your stock with ease. Learn the essential tools to manage your inventory quickly and confidently!
           </Typography>
         </Box>
         <Grid container spacing={2}>

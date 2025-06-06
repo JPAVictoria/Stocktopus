@@ -64,8 +64,8 @@ export default function FAQ() {
               sx={{ maxWidth: { sm: '100%', md: '70%' } }}
             >
               You can reach our customer support team by emailing&nbsp;
-              <Link href="mailto:support@email.com">foodopedia.support@email.com</Link>
-              &nbsp;or calling our toll-free number: 870 000. We&apos;re here to assist you
+              <Link href="mailto:support@email.com">stocktopus.support@email.com</Link>
+              &nbsp;or calling our toll-free number: 389 500. We&apos;re here to assist you
               promptly.
             </Typography>
           </AccordionDetails>
@@ -114,9 +114,8 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '70%' } }}
             >
-              Our Foodopedia is fast, user-friendly, and fully customizable. Built with React, 
-              it offers real-time content editing, personalized user experiences, and a clean, responsive design.
-              And of course, a professional, simple, yet comfortable environment!
+              Stocktopus stands out by using fast, responsive React.js technology to deliver a smooth, user-friendly inventory experience. 
+              It offers real-time updates, easy scalability, and simple controls. It does not matter whether size your business is, Stocktopus is for you!
             </Typography>
           </AccordionDetails>
         </Accordion>
