@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { useLoading } from "@/app/context/LoaderContext";
 
-const InventoryCharts = dynamic(() => import("@/app/components/InventoryCharts"), {
+const StatisticsCard = dynamic(() => import("@/app/components/StatisticsCard"), {
   ssr: false,
 });
 
@@ -32,7 +32,7 @@ export default function InventoryDashboard() {
         <h1 className="text-xl font-bold text-center mb-8 mt-12">
           Company Inventory Overview
         </h1>
-        <InventoryCharts />
+        <StatisticsCard />
         <PieAnalytics pieData={pieData}/>
       </div>
     </div>

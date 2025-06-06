@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Skeleton } from "@mui/material";
 
-export default function InventoryCharts() {
+export default function StatisticsCard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
