@@ -23,8 +23,16 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
   const [availableLocations, setAvailableLocations] = useState([]);
+  const [allLocations, setAllLocations] = useState([]); 
   const { openSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
+
+  
+  useEffect(() => {
+    if (open) {
+      fetchAllLocations();
+    }
+  }, [open]);
 
   useEffect(() => {
     if (open && product) {
@@ -35,6 +43,18 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
       clearFields();
     }
   }, [open, product]);
+
+  const fetchAllLocations = async () => {
+    try {
+      const response = await axios.get('/api/inventory', {
+        withCredentials: true
+      });
+      setAllLocations(response.data);
+    } catch (error) {
+      console.error("Failed to fetch locations:", error);
+      openSnackbar("Failed to load locations", "error");
+    }
+  };
 
   const clearFields = () => {
     setQuantity("");
@@ -98,9 +118,9 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
         const fromLocationName = availableLocations.find(
           (loc) => loc.locationId === fromLocation
         )?.location.name;
-        const toLocationName = availableLocations.find(
-          (loc) => loc.locationId === toLocation
-        )?.location.name;
+        const toLocationName = allLocations.find(
+          (loc) => loc.id === toLocation
+        )?.location;
         
         openSnackbar(
           `Successfully transferred ${quantity} units from ${fromLocationName} to ${toLocationName}`,
@@ -133,8 +153,17 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
     return selectedLocation?.quantity || 0;
   };
 
+  
+  const getCurrentQuantityAtLocation = (locationId) => {
+    const existingLocation = availableLocations.find(
+      (loc) => loc.locationId === locationId
+    );
+    return existingLocation?.quantity || 0;
+  };
+
   const getDestinationLocations = () => {
-    return availableLocations;
+    
+    return allLocations;
   };
 
   return (
@@ -228,12 +257,15 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
                 Choose destination location
               </MenuItem>
               {getDestinationLocations()
-                .filter((loc) => loc.locationId !== fromLocation)
-                .map((loc) => (
-                  <MenuItem key={loc.locationId} value={loc.locationId}>
-                    {loc.location.name} (Current: {loc.quantity})
-                  </MenuItem>
-                ))}
+                .filter((loc) => loc.id !== fromLocation)
+                .map((loc) => {
+                  const currentQty = getCurrentQuantityAtLocation(loc.id);
+                  return (
+                    <MenuItem key={loc.id} value={loc.id}>
+                      {loc.location} (Current: {currentQty})
+                    </MenuItem>
+                  );
+                })}
             </Select>
           </FormControl>
         </div>
