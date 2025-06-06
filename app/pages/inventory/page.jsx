@@ -9,6 +9,7 @@ import { Chip } from "@mui/material";
 import LocationModal from "@/app/components/LocationModal";
 import ConfirmDeleteModal from "@/app/components/ConfirmDeleteModal";
 import { useSnackbar } from "@/app/context/SnackbarContext";
+import { getRowHeightProduct } from "@/app/utils/helpers";
 
 export default function InventoryLocations() {
   const [rows, setRows] = useState([]);
@@ -95,7 +96,7 @@ export default function InventoryLocations() {
       align: "center",
       flex: 0.8,
       renderCell: (params) => (
-        <div className="flex flex-col items-center gap-1 py-2">
+        <div className="flex flex-col items-center gap-1 py-3">
           {params.row.productDetails?.map((product, index) => (
             <div key={index} className="flex items-center gap-2">
               <span className="text-sm">{product.name}</span>
@@ -202,7 +203,7 @@ export default function InventoryLocations() {
         <DataGrid
           rows={rows}
           columns={columns}
-          rowHeight={100} 
+          getRowHeight={getRowHeightProduct}
           pageSizeOptions={[5, 10]}
           disableRowSelectionOnClick
           loading={loading}
