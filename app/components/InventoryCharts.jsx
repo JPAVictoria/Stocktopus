@@ -7,7 +7,6 @@ import { Skeleton } from "@mui/material";
 export default function InventoryCharts() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStatistics = async () => {
@@ -17,7 +16,6 @@ export default function InventoryCharts() {
         setData(response.data);
       } catch (err) {
         console.error('Error fetching statistics:', err);
-        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -41,22 +39,6 @@ export default function InventoryCharts() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="grid grid-cols-3 gap-6 w-300 mx-auto">
-        <div className="col-span-3 bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <p className="text-red-600">Error loading statistics: {error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const userLineData = data?.userLineData || {
     series: [{ data: [10, 15, 20, 25] }],
     xAxis: [{ data: ["Day 1", "Day 5", "Day 10", "Day 15"] }]
@@ -70,7 +52,7 @@ export default function InventoryCharts() {
   return (
     <>
       <div className="grid grid-cols-3 gap-6 w-300 mx-auto">
-        <div className="bg-white border border-[#2D2D2D]/25 rounded-lg p-6 flex flex-col justify-between">
+        <div className="bg-white border border-[#2D2D2D]/25 rounded-lg p-6 flex flex-col justify-between overflow-hidden">
           <div>
             <p className="font-regular text-[#333333] text-[14px] mb-1">
               Company User Count:
@@ -82,37 +64,40 @@ export default function InventoryCharts() {
               Last 30 days
             </p>
           </div>
-          <LineChart
-            className="ml-[-35px]"
-            {...userLineData}
-            height={80}
-            colors={["#00C853"]}
-            xAxis={[
-              {
-                scaleType: "point",
-                data: userLineData.xAxis?.[0]?.data || [],
-                display: false,
-              },
-            ]}
-            yAxis={[{ display: false }]}
-            grid={{ horizontal: false, vertical: false }}
-            sx={{
-              "& .MuiChartsAxis-root": {
-                display: "none",
-              },
-              "& .MuiChartsGrid-line": {
-                display: "none",
-              },
-              "& .MuiChartsLineChart-root": {
-                paddingBottom: 0,
-                marginBottom: 0,
-              },
-              "& svg": {
-                marginBottom: 0,
-                paddingBottom: 0,
-              },
-            }}
-          />
+          <div className="relative w-full h-20 overflow-hidden">
+            <LineChart
+              className="absolute -left-8 top-0"
+              {...userLineData}
+              width={280}
+              height={80}
+              colors={["#00C853"]}
+              xAxis={[
+                {
+                  scaleType: "point",
+                  data: userLineData.xAxis?.[0]?.data || [],
+                  display: false,
+                },
+              ]}
+              yAxis={[{ display: false }]}
+              grid={{ horizontal: false, vertical: false }}
+              sx={{
+                "& .MuiChartsAxis-root": {
+                  display: "none",
+                },
+                "& .MuiChartsGrid-line": {
+                  display: "none",
+                },
+                "& .MuiChartsLineChart-root": {
+                  paddingBottom: 0,
+                  marginBottom: 0,
+                },
+                "& svg": {
+                  marginBottom: 0,
+                  paddingBottom: 0,
+                },
+              }}
+            />
+          </div>
         </div>
 
         <div className="bg-white p-6 border border-[#2D2D2D]/25 rounded-lg text-center flex flex-col justify-between">
@@ -135,7 +120,7 @@ export default function InventoryCharts() {
           </div>
         </div>
 
-        <div className="bg-white p-6 border border-[#2D2D2D]/25 rounded-lg flex flex-col justify-between">
+        <div className="bg-white p-6 border border-[#2D2D2D]/25 rounded-lg flex flex-col justify-between overflow-hidden">
           <div>
             <p className="font-regular text-[#333333] text-[14px]">
               Active Products:
@@ -147,37 +132,40 @@ export default function InventoryCharts() {
               Last 30 days
             </p>
           </div>
-          <LineChart
-            className="ml-[-35px]"
-            {...inventoryLineData}
-            height={80}
-            colors={["#00C853"]}
-            xAxis={[
-              {
-                scaleType: "point",
-                data: inventoryLineData.xAxis?.[0]?.data || [],
-                display: false,
-              },
-            ]}
-            yAxis={[{ display: false }]}
-            grid={{ horizontal: false, vertical: false }}
-            sx={{
-              "& .MuiChartsAxis-root": {
-                display: "none",
-              },
-              "& .MuiChartsGrid-line": {
-                display: "none",
-              },
-              "& .MuiChartsLineChart-root": {
-                paddingBottom: 0,
-                marginBottom: 0,
-              },
-              "& svg": {
-                marginBottom: 0,
-                paddingBottom: 0,
-              },
-            }}
-          />
+          <div className="relative w-full h-20 overflow-hidden">
+            <LineChart
+              className="absolute -left-8 top-0"
+              {...inventoryLineData}
+              width={280}
+              height={80}
+              colors={["#00C853"]}
+              xAxis={[
+                {
+                  scaleType: "point",
+                  data: inventoryLineData.xAxis?.[0]?.data || [],
+                  display: false,
+                },
+              ]}
+              yAxis={[{ display: false }]}
+              grid={{ horizontal: false, vertical: false }}
+              sx={{
+                "& .MuiChartsAxis-root": {
+                  display: "none",
+                },
+                "& .MuiChartsGrid-line": {
+                  display: "none",
+                },
+                "& .MuiChartsLineChart-root": {
+                  paddingBottom: 0,
+                  marginBottom: 0,
+                },
+                "& svg": {
+                  marginBottom: 0,
+                  paddingBottom: 0,
+                },
+              }}
+            />
+          </div>
         </div>
       </div>
     </>
