@@ -9,7 +9,12 @@ export async function GET(req) {
       where: { deleted: false },
       include: {
         products: {
-          where: { deleted: false },
+          where: { 
+            deleted: false,
+            quantity: {
+              gt: 0  
+            }
+          },
           include: {
             product: true,
           },
@@ -22,7 +27,7 @@ export async function GET(req) {
       location: loc.name,
       address: loc.address,
       createdDate: moment(loc.createdAt).format("MMMM D, YYYY h:mm:ss A"),
-      products: loc.products.map((p) => p.product.name).join(", "), 
+      products: loc.products.map((p) => p.product.name).join(", "),
       productCount: loc.products.length,
       productDetails: loc.products.map((p) => ({
         name: p.product.name,
@@ -96,5 +101,3 @@ export async function PUT(req) {
     return new Response("Failed to process request", { status: 500 });
   }
 }
-
-
