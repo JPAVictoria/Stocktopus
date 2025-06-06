@@ -33,11 +33,34 @@ export const createColumns = (handlers) => [
     headerAlign: "center",
     align: "center",
     flex: 1,
-    renderCell: (params) => (
-      <div className="text-[#333333] flex items-center h-full">
-        {params.value}
-      </div>
-    ),
+    renderCell: (params) => {
+      
+      let locations = [];
+      
+      if (Array.isArray(params.value)) {
+        
+        locations = params.value;
+      } else if (typeof params.value === 'string') {
+        
+        locations = params.value.split(',').map(loc => loc.trim());
+      } else if (params.row.locations && Array.isArray(params.row.locations)) {
+        
+        locations = params.row.locations;
+      } else {
+        
+        locations = [params.value || 'No location'];
+      }
+
+      return (
+        <div className="text-[#333333] flex flex-col items-center justify-center h-full py-2">
+          {locations.map((location, index) => (
+            <div key={index} className="text-sm leading-tight mb-2">
+              {location}
+            </div>
+          ))}
+        </div>
+      );
+    },
   },
   {
     field: "srp",

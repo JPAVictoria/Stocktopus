@@ -13,6 +13,7 @@ import { useSnackbar } from "@/app/context/SnackbarContext";
 import { useProducts } from "@/app/hooks/useProducts";
 import { useModals } from "@/app/hooks/useProductModals";
 import { createColumns } from "@/app/config/columns";
+import { getRowHeight } from "@/app/utils/helpers";
 
 export default function ProductOverview() {
   const { openSnackbar } = useSnackbar();
@@ -50,6 +51,7 @@ export default function ProductOverview() {
     fetchProducts();
   };
 
+
   return (
     <div className="p-8 min-h-screen">
       <Navbar />
@@ -71,7 +73,7 @@ export default function ProductOverview() {
         <DataGrid
           rows={products}
           columns={columns}
-          rowHeight={80}
+          getRowHeight={getRowHeight}
           pageSizeOptions={[5, 10, 25]}
           loading={loading}
           initialState={{
