@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { isValidUrl } from '../utils/helpers';
 
-const isValidUrl = (url) => {
-  try {
-    new URL(url);
-    return true;
-  } catch (_) {
-    return false;
-  }
-};
 
 export const useProducts = (openSnackbar) => {
   const [products, setProducts] = useState([]);

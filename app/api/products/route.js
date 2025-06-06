@@ -44,6 +44,9 @@ export async function GET(request) {
         locations: {
           where: {
             deleted: false,
+            quantity: {
+              gt: 0  
+            }
           },
           include: {
             location: true,
