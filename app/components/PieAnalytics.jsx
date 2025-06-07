@@ -6,8 +6,9 @@ import axios from "axios";
 
 export default function PieAnalytics() {
   const [pieData, setPieData] = useState([]);
+  const [inventoryData, setInventoryData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [setError] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchChartData = async () => {
@@ -16,6 +17,7 @@ export default function PieAnalytics() {
 
         if (response.data.success) {
           setPieData(response.data.data.topProductsByValue);
+          setInventoryData(response.data.data.inventoryByLocation);
         } else {
           setError("Failed to load chart data");
         }
@@ -75,10 +77,9 @@ export default function PieAnalytics() {
             height={200}
             hideLegend={true}
             tooltip={{
-              trigger: "item",
               formatter: (params) => {
                 const item = pieData[params.dataIndex];
-                return `${item.productName}: ${item.totalAmount.toLocaleString(
+                return `${item.productName}: PHP ${item.totalAmount.toLocaleString(
                   "en-US",
                   {
                     minimumFractionDigits: 2,
@@ -96,12 +97,40 @@ export default function PieAnalytics() {
       </div>
 
       <div className="bg-white p-10 text-center border border-[#2D2D2D]/25 rounded-lg">
-        <p className="font-semibold mb-4 text-[#3d3d3d] text-lg">
+        <p className="font-semibold mb-7 text-[#3d3d3d] text-lg">
           Inventory by Location
         </p>
-        <div className="flex justify-center items-center h-[200px]">
-          <p className="text-gray-500">Coming soon...</p>
-        </div>
+        {inventoryData.length > 0 ? (
+          <PieChart
+            series={[
+              {
+                data: inventoryData.map(item => ({
+                  id: item.id,
+                  value: item.totalQuantity,
+                  label: `${item.locationName} - ${item.products.join(', ')}`,
+                  color: item.color
+                })),
+                innerRadius: 50,
+                outerRadius: 100,
+                paddingAngle: 2,
+                cornerRadius: 4,
+                highlightScope: { fade: "global", highlight: "item" },
+                faded: {
+                  innerRadius: 30,
+                  additionalRadius: -20,
+                  color: "rgba(0,0,0,0.1)",
+                },
+              },
+            ]}
+            width={400}
+            height={200}
+            hideLegend={true}
+          />
+        ) : (
+          <div className="flex justify-center items-center h-[200px]">
+            <p className="text-gray-500">No data available</p>
+          </div>
+        )}
       </div>
     </div>
   );

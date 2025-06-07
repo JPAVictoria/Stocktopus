@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    
+    // Top Products by Value (existing code)
     const productsWithTotalValue = await prisma.product.findMany({
       where: {
         deleted: false
@@ -22,7 +22,6 @@ export async function GET() {
       }
     });
 
-    
     const productValues = productsWithTotalValue
       .map(product => {
         const totalQuantity = product.locations.reduce((sum, location) => sum + location.quantity, 0);
@@ -40,23 +39,65 @@ export async function GET() {
       .sort((a, b) => b.totalValue - a.totalValue) 
       .slice(0, 10); 
 
-    
     const pieData = productValues.map((product, index) => ({
       id: index,
       value: product.totalValue,
       label: product.name,
       color: generateColor(index), 
-      
       productName: product.name,
       totalAmount: product.totalValue,
       quantity: product.totalQuantity,
       price: product.price
     }));
 
+    // Inventory by Location (new code)
+    const locationsWithProducts = await prisma.location.findMany({
+      where: {
+        deleted: false
+      },
+      include: {
+        products: {
+          where: {
+            deleted: false,
+            quantity: {
+              gt: 0
+            }
+          },
+          include: {
+            product: {
+              select: {
+                name: true,
+                deleted: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const inventoryData = locationsWithProducts
+      .map((location, index) => {
+        const validProducts = location.products.filter(productLocation => !productLocation.product.deleted);
+        const totalQuantity = validProducts.reduce((sum, productLocation) => sum + productLocation.quantity, 0);
+        const productNames = validProducts.map(productLocation => productLocation.product.name);
+        
+        return {
+          id: index,
+          value: totalQuantity,
+          label: location.name,
+          color: generateColor(index),
+          locationName: location.name,
+          totalQuantity: totalQuantity,
+          products: productNames
+        };
+      })
+      .filter(location => location.totalQuantity > 0);
+
     return NextResponse.json({
       success: true,
       data: {
-        topProductsByValue: pieData
+        topProductsByValue: pieData,
+        inventoryByLocation: inventoryData
       }
     });
 
@@ -73,7 +114,6 @@ export async function GET() {
     await prisma.$disconnect();
   }
 }
-
 
 function generateColor(index) {
   const colors = [
