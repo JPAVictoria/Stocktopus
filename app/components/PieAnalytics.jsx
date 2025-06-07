@@ -7,7 +7,7 @@ import axios from "axios";
 export default function PieAnalytics() {
   const [pieData, setPieData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [setError] = useState(null);
 
   useEffect(() => {
     const fetchChartData = async () => {

@@ -13,7 +13,7 @@ const PieAnalytics = dynamic(() => import("@/app/components/PieAnalytics"), {
 });
 
 export default function InventoryDashboard() {
-  const { loading, setLoading } = useLoading();
+  const { setLoading } = useLoading();
 
   useEffect(() => {
     setLoading(false);
