@@ -19,12 +19,6 @@ export default function InventoryDashboard() {
     setLoading(false);
   }, [setLoading]);
 
-  const pieData = [
-    { id: 0, value: 40, color: "#00BCD4" },
-    { id: 1, value: 30, color: "#9C27B0" },
-    { id: 2, value: 30, color: "#00ACC1" },
-  ];
-
   return (
     <div className="flex bg-[#f7f9fc] min-h-screen text-[#3d3d3d]">
       <Navbar />
@@ -33,7 +27,7 @@ export default function InventoryDashboard() {
           Company Inventory Overview
         </h1>
         <StatisticsCard />
-        <PieAnalytics pieData={pieData}/>
+        <PieAnalytics />
       </div>
     </div>
   );
