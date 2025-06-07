@@ -1,15 +1,25 @@
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import { isValidUrl } from '@/app/utils/helpers';
+import Image from 'next/image';
 
 const ProductImage = ({ imageUrl, name, onClick }) => {
   const [imageError, setImageError] = useState(false);
-  const [imageSrc, setImageSrc] = useState(() => {
+  const [imageSrc, setImageSrc] = useState("/octopus.png");
+
+  
+  useEffect(() => {
+    setImageError(false); 
+    
     if (imageUrl && isValidUrl(imageUrl)) {
-      return imageUrl;
+      
+      const newImageSrc = imageUrl.includes('?') 
+        ? `${imageUrl}&t=${Date.now()}` 
+        : `${imageUrl}?t=${Date.now()}`;
+      setImageSrc(newImageSrc);
+    } else {
+      setImageSrc("/octopus.png");
     }
-    return "/octopus.png";
-  });
+  }, [imageUrl]); 
 
   const handleImageError = () => {
     setImageError(true);
@@ -26,6 +36,8 @@ const ProductImage = ({ imageUrl, name, onClick }) => {
         className="rounded"
         onError={handleImageError}
         unoptimized={!imageSrc.startsWith("/")}
+        
+        key={imageSrc}
       />
       <span 
         className="text-sm font-medium text-[#333333] cursor-pointer hover:underline transition-all duration-200"
