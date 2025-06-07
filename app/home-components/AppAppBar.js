@@ -74,10 +74,7 @@ const scrollToSection = (id) => {
                 Features
               </Button>
               <Button variant="text" color="info" size="small" onClick={() => scrollToSection('admin')}>
-                Admin Guide
-              </Button>
-              <Button variant="text" color="info" size="small" onClick={() => scrollToSection('viewer')}>
-                Viewer Guide
+                User's Guide
               </Button>
               <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }} onClick={() => scrollToSection('faq')}>
                 FAQs

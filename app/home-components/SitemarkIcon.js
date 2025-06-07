@@ -26,35 +26,3 @@ export default function SitemarkIcon() {
     />
   );
 }
-
-
-
-
-
-// 'use client';
-
-// import * as React from 'react';
-// import SvgIcon from '@mui/material/SvgIcon';
-// import { useTheme } from '@mui/material/styles';
-
-// const theme = useTheme();
-
-//   const lightImage = `url("/octopus.png")`;
-//   const darkImage = `url("/octopus-dark.png")`;
-
-// export default function SitemarkIcon() {
-//   return (
-//     <SvgIcon
-//       sx={{ height: 70, width: 160, mr: 2 }}
-//       component="svg"
-//       viewBox="0 0 140 70"
-//     >
-//       <image
-//         href="/icon.png" // Use forward slashes and a correct relative or public path
-//         width="150"
-//         height="70"
-//         preserveAspectRatio="xMidYMid meet"
-//       />
-//     </SvgIcon>
-//   );
-// }
