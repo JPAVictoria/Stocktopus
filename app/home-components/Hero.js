@@ -109,7 +109,7 @@ export default function Hero() {
                 },
               }}
               onClick={() => {
-                window.location.href = "/pages/register";
+                window.location.href = "/pages/login";
               }}
             >
               Join Stocktopus Now!
