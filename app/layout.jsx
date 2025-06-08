@@ -50,7 +50,7 @@ export const metadata = {
     type: "website",
   },
   icons: {
-    icon: "/icon.png",
+    icon: "/logogo.png",
   },
 };
 
