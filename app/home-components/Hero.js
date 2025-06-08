@@ -265,7 +265,7 @@ export default function Hero() {
               <p>
                 Stocktopus is your to go to inventory management companion designed to
                 streamline stock tracking, simplify supply workflows, and reduce human
-                error. Whether you're managing a warehouse, retail store, or online shop,
+                error. Whether you&apos;re managing a warehouse, retail store, or online shop,
                 Stocktopus has enough arms you with powerful tools to take control.
               </p>
               <br></br>
