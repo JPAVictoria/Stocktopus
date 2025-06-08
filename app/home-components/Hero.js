@@ -241,7 +241,7 @@ export default function Hero() {
                 marginBottom: "1rem",
                 marginTop: "-3rem",
                 width: "100%",
-                maxWidth: "550px",
+                maxWidth: "425px",
                 textAlign: "left",
                 marginLeft: "1rem",
                 letterSpacing: "0.8px",
@@ -270,7 +270,7 @@ export default function Hero() {
               </p>
               <br></br>
               <p>
-                Built using robust technologies like Express.js, React, and PostgreSQL,
+                Built using robust technologies like  Next JS, MUI, and PostgreSQL,
                 it’s fast, scalable, and made for teams who value efficiency. With real-time
                 updates, sleek dashboards, and insightful reporting, Stocktopus makes
                 inventory less of a chore and more of a strategic advantage!
