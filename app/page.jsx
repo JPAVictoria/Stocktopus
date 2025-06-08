@@ -4,7 +4,6 @@ import Divider from '@mui/material/Divider';
 import AppTheme from './shared-theme/AppTheme';
 import AppAppBar from './home-components/AppAppBar';
 import Hero from './home-components/Hero';
-import Viewersteps from './home-components/Viewersteps';
 import Features from './home-components/Features';
 import Adminsteps from './home-components/Adminsteps';
 import FAQ from './home-components/FAQ';
@@ -20,8 +19,6 @@ export default function MarketingPage(props) {
         <Features />
         <Divider />
         <Adminsteps />
-        <Divider />
-        <Viewersteps />
         <Divider />
         <Divider />
         <FAQ />

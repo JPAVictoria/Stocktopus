@@ -57,7 +57,7 @@ export default function Hero() {
               fontSize: "clamp(3rem, 10vw, 3.5rem)",
             }}
           >
-            Welcome&nbsp;to&nbsp;
+            Organize&nbsp;Better&nbsp;With&nbsp;
             <Typography
               component="span"
               variant="h1"
@@ -69,7 +69,7 @@ export default function Hero() {
                 }),
               })}
             >
-              Brave
+              Stocktopus
             </Typography>
           </Typography>
           <Typography
@@ -79,10 +79,8 @@ export default function Hero() {
               width: { sm: "100%", md: "80%" },
             }}
           >
-            Explore your go-to recipe-sharing platform where chefs, home cooks,
-            and food lovers unite. Enjoy intuitive navigation, inspiring dishes,
-            and a welcoming space that makes cooking and connecting easier than
-            ever.
+            Welcome to your smarter, more organized inventory solution. Stocktopus helps you track, manage, 
+            and optimize your stock with ease, so you can focus on what matters the most.
           </Typography>
           <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -99,32 +97,7 @@ export default function Hero() {
                 px: 2,
                 py: 1,
                 borderRadius: 1,
-                backgroundColor: "transparent",
-                borderColor: isDark ? "#4CAF50" : "#B0B0B0",
-                color: isDark ? "#4CAF50" : "text.primary",
-
-                "&:hover": {
-                  borderColor: "#4CAF50",
-                  color: "#4CAF50",
-                  backgroundColor: "transparent",
-                },
-              }}
-              onClick={() => {
-                window.location.href = "/admin/login";
-              }}
-            >
-              Join as Admin
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{
-                minWidth: "fit-content",
-                textTransform: "none",
-                px: 2,
-                py: 1,
-                borderRadius: 1,
-                ml: 2,
+                ml: 5,
                 backgroundColor: "transparent",
                 borderColor: isDark ? "#FF9800" : "#B0B0B0",
                 color: isDark ? "#FF9800" : "text.primary",
@@ -136,10 +109,10 @@ export default function Hero() {
                 },
               }}
               onClick={() => {
-                window.location.href = "/viewer/login";
+                window.location.href = "/pages/register";
               }}
             >
-              Join as Viewer!
+              Join Stocktopus Now!
             </Button>
           </Stack>
         </Stack>
@@ -163,14 +136,14 @@ export default function Hero() {
               }}
             >
               <img
-                src="/chef.png"
-                alt="Main Chef"
+                src="/misc.png"
+                alt="Inventory"
                 style={{
                   width: "350px",
                   height: "350px",
                   borderRadius: "50%",
                   objectFit: "cover",
-                  border: "4px solid #4CAF50",
+                  border: "4px solid #FF9800",
                   boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
                   position: "absolute",
                   top: 20,
@@ -180,14 +153,14 @@ export default function Hero() {
               />
 
               <img
-                src="idk.png"
-                alt="Chef 1"
+                src="search.jpg"
+                alt="search"
                 style={{
                   width: "150px",
                   height: "150px",
                   borderRadius: "50%",
                   objectFit: "cover",
-                  border: "4px solid #4CAF50",
+                  border: "4px solid #FF9800",
                   boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
                   position: "absolute",
                   top: "50px",
@@ -197,14 +170,14 @@ export default function Hero() {
               />
 
               <img
-                src="sisig.png"
-                alt="Chef 2"
+                src="update.webp"
+                alt="update"
                 style={{
                   width: "150px",
                   height: "150px",
                   borderRadius: "50%",
                   objectFit: "cover",
-                  border: "4px solid #4CAF50",
+                  border: "4px solid #FF9800",
                   boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
                   position: "absolute",
                   top: "250px",
@@ -214,14 +187,14 @@ export default function Hero() {
               />
 
               <img
-                src="sinigang.png"
-                alt="Dish"
+                src="stock.jpg"
+                alt="stock"
                 style={{
                   width: "150px",
                   height: "150px",
                   borderRadius: "50%",
                   objectFit: "cover",
-                  border: "4px solid #4CAF50",
+                  border: "4px solid #FF9800",
                   boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
                   position: "absolute",
                   bottom: "50px",
@@ -231,14 +204,14 @@ export default function Hero() {
               />
 
               <img
-                src="karekare.jpeg"
-                alt="Chef 3"
+                src="list.png"
+                alt="list"
                 style={{
                   width: "150px",
                   height: "150px",
                   borderRadius: "50%",
                   objectFit: "cover",
-                  border: "4px solid #4CAF50",
+                  border: "4px solid #FF9800",
                   boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
                   position: "absolute",
                   bottom: "40px",
@@ -275,7 +248,7 @@ export default function Hero() {
                 lineHeight: "1.4",
               }}
             >
-              A Better Way to Share Food Content
+              A Smarter Way to Manage Your Inventory
             </h1>
 
             <div
@@ -290,19 +263,17 @@ export default function Hero() {
               }}
             >
               <p>
-                Our food-focused content management system makes it effortless
-                to deliver mouthwatering content to your audience. Designed with
-                a clear separation of roles, the platform features a robust
-                admin dashboard—where content creators can manage, publish, and
-                update food-related entries—and a sleek, user-friendly viewer
-                side that showcases it all in real time.
+                Stocktopus is your to go to inventory management companion designed to
+                streamline stock tracking, simplify supply workflows, and reduce human
+                error. Whether you're managing a warehouse, retail store, or online shop,
+                Stocktopus has enough arms you with powerful tools to take control.
               </p>
               <br></br>
               <p>
-                Built with Express.js, Next.js, PostgreSQL, and a modern UI
-                toolkit, it’s fast, scalable, and tailored for dynamic food
-                content delivery. From kitchen stories to recipe databases, if
-                it’s edible, it’s editable.
+                Built using robust technologies like Express.js, React, and PostgreSQL,
+                it’s fast, scalable, and made for teams who value efficiency. With real-time
+                updates, sleek dashboards, and insightful reporting, Stocktopus makes
+                inventory less of a chore and more of a strategic advantage!
               </p>
             </div>
           </div>
