@@ -7,7 +7,6 @@ import {
   BarChart2,
   Grid,
   Home,
-  Settings,
   LogOut
 } from 'lucide-react';
 import axios from 'axios';
@@ -37,8 +36,8 @@ export default function Navbar() {
   };
 
   return (
-    <div className="fixed top-1/2 left-10 -translate-y-1/2 h-[380px] w-15 bg-white border border-[#2D2D2D]/25 rounded-lg flex flex-col justify-between items-center py-12">
-      <div className="flex flex-col items-center gap-10">
+    <div className="fixed top-1/2 left-10 -translate-y-1/2 h-[340px] w-15 bg-white border border-[#2D2D2D]/25 rounded-lg flex flex-col justify-between items-center py-12">
+      <div className="flex flex-col items-center gap-13">
         <Tooltip title="Dashboard" placement="right">
           <Link href="/pages/dashboard">
             <div className={iconClasses}>
@@ -59,14 +58,6 @@ export default function Navbar() {
           <Link href="/pages/inventory">
             <div className={iconClasses}>
               <Home />
-            </div>
-          </Link>
-        </Tooltip>
-
-        <Tooltip title="Audit Logs" placement="right">
-          <Link href="/pages/audit">
-            <div className={iconClasses}>
-              <Settings />
             </div>
           </Link>
         </Tooltip>
