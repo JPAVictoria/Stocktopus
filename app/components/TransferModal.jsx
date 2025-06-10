@@ -62,8 +62,33 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
     setToLocation("");
   };
 
+  const formatQuantity = (value) => {
+    
+    const num = parseFloat(value);
+    if (isNaN(num)) return "0";
+    return num % 1 === 0 ? num.toString() : num.toFixed(2).replace(/\.?0+$/, '');
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = e.target.value;
+    
+    
+    if (value === "") {
+      setQuantity("");
+      return;
+    }
+    
+    
+    const decimalRegex = /^\d*\.?\d{0,2}$/;
+    if (decimalRegex.test(value)) {
+      setQuantity(value);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!quantity || quantity <= 0) {
+    const quantityValue = parseFloat(quantity);
+    
+    if (!quantity || quantityValue <= 0 || isNaN(quantityValue)) {
       openSnackbar("Valid quantity is required", "error");
       return;
     }
@@ -87,9 +112,9 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
     }
 
     const maxAvailable = getMaxQuantityForLocation(fromLocation);
-    if (parseInt(quantity) > maxAvailable) {
+    if (quantityValue > maxAvailable) {
       openSnackbar(
-        `Cannot transfer ${quantity} items. Only ${maxAvailable} available at source location.`,
+        `Cannot transfer ${formatQuantity(quantity)} items. Only ${formatQuantity(maxAvailable)} available at source location.`,
         "error"
       );
       return;
@@ -100,7 +125,7 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
     try {
       const transferData = {
         productId: product?.id,
-        quantity: parseInt(quantity),
+        quantity: quantityValue,
         fromLocationId: fromLocation,
         toLocationId: toLocation,
       };
@@ -123,7 +148,7 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
         )?.location;
         
         openSnackbar(
-          `Successfully transferred ${quantity} units from ${fromLocationName} to ${toLocationName}`,
+          `Successfully transferred ${formatQuantity(quantity)} units from ${fromLocationName} to ${toLocationName}`,
           "success"
         );
 
@@ -150,7 +175,7 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
     const selectedLocation = availableLocations.find(
       (loc) => loc.locationId === locationId
     );
-    return selectedLocation?.quantity || 0;
+    return parseFloat(selectedLocation?.quantity) || 0;
   };
 
   
@@ -158,7 +183,7 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
     const existingLocation = availableLocations.find(
       (loc) => loc.locationId === locationId
     );
-    return existingLocation?.quantity || 0;
+    return parseFloat(existingLocation?.quantity) || 0;
   };
 
   const getDestinationLocations = () => {
@@ -206,7 +231,7 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
               Product: {product.name}
             </h4>
             <p className="text-sm text-gray-600">
-              Total Available: {product.totalQuantity}
+              Total Available: {formatQuantity(product.totalQuantity)}
             </p>
           </div>
         )}
@@ -232,7 +257,7 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
               </MenuItem>
               {availableLocations.map((loc) => (
                 <MenuItem key={loc.locationId} value={loc.locationId}>
-                  {loc.location.name} (Available: {loc.quantity})
+                  {loc.location.name} (Available: {formatQuantity(loc.quantity)})
                 </MenuItem>
               ))}
             </Select>
@@ -262,7 +287,7 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
                   const currentQty = getCurrentQuantityAtLocation(loc.id);
                   return (
                     <MenuItem key={loc.id} value={loc.id}>
-                      {loc.location} (Current: {currentQty})
+                      {loc.location} (Current: {formatQuantity(currentQty)})
                     </MenuItem>
                   );
                 })}
@@ -273,9 +298,9 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
         <TextField
           fullWidth
           label="Quantity to Transfer"
-          type="number"
+          type="text"
           value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
+          onChange={handleQuantityChange}
           margin="dense"
           size="small"
           sx={{ mt: 2 }}
@@ -284,10 +309,17 @@ export default function TransferModal({ open, onClose, product = null, onTransfe
           InputProps={{
             style: { color: "#333333" },
             inputProps: {
-              min: 1,
-              max: getMaxQuantityForLocation(fromLocation),
+              inputMode: "decimal",
+              pattern: "[0-9]*\\.?[0-9]{0,2}",
+              step: "0.01",
             },
           }}
+          helperText={
+            fromLocation
+              ? `Max available: ${formatQuantity(getMaxQuantityForLocation(fromLocation))} • Supports decimals (e.g., 1.5, 2.25)`
+              : "Select source location first • Supports decimals (e.g., 1.5, 2.25)"
+          }
+          placeholder="Enter quantity (e.g., 1.5)"
         />
       </DialogContent>
 

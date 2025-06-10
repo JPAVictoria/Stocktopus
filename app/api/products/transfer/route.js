@@ -34,9 +34,19 @@ export async function POST(req) {
       );
     }
 
-    if (quantity <= 0) {
+    
+    const quantityValue = parseFloat(quantity);
+    if (!Number.isFinite(quantityValue) || quantityValue <= 0) {
       return NextResponse.json(
-        { error: "Quantity must be greater than 0" },
+        { error: "Quantity must be a valid positive number" },
+        { status: 400 }
+      );
+    }
+
+    
+    if (quantityValue.toString().split('.')[1]?.length > 2) {
+      return NextResponse.json(
+        { error: "Quantity cannot have more than 2 decimal places" },
         { status: 400 }
       );
     }
@@ -105,14 +115,14 @@ export async function POST(req) {
       })
     ]);
 
-    const fromQuantity = fromProductLocation?.quantity || 0;
-    const toQuantity = toProductLocation?.quantity || 0;
+    const fromQuantity = parseFloat(fromProductLocation?.quantity) || 0;
+    const toQuantity = parseFloat(toProductLocation?.quantity) || 0;
 
     
-    if (fromQuantity < quantity) {
+    if (fromQuantity < quantityValue) {
       return NextResponse.json(
         { 
-          error: `Insufficient quantity at source location. Available: ${fromQuantity}, Requested: ${quantity}` 
+          error: `Insufficient quantity at source location. Available: ${fromQuantity}, Requested: ${quantityValue}` 
         },
         { status: 400 }
       );
@@ -122,27 +132,42 @@ export async function POST(req) {
     const result = await prisma.$transaction(async (prisma) => {
       
       if (fromProductLocation) {
+        const newFromQuantity = fromQuantity - quantityValue;
         await prisma.productLocation.update({
           where: { id: fromProductLocation.id },
-          data: { quantity: fromQuantity - quantity }
+          data: { quantity: newFromQuantity }
         });
       }
 
       
       if (toProductLocation) {
+        const newToQuantity = toQuantity + quantityValue;
         await prisma.productLocation.update({
           where: { id: toProductLocation.id },
-          data: { quantity: toQuantity + quantity }
+          data: { quantity: newToQuantity }
         });
       } else {
         await prisma.productLocation.create({
           data: {
             productId,
             locationId: toLocationId,
-            quantity: quantity
+            quantity: quantityValue
           }
         });
       }
+
+      
+      const totalQuantityResult = await prisma.productLocation.aggregate({
+        where: { productId, deleted: false },
+        _sum: { quantity: true },
+      });
+
+      const totalQuantity = parseFloat(totalQuantityResult._sum.quantity) || 0;
+
+      await prisma.product.update({
+        where: { id: productId },
+        data: { quantity: totalQuantity },
+      });
 
       
       const updatedProduct = await prisma.product.findFirst({
@@ -165,11 +190,13 @@ export async function POST(req) {
       product: result,
       transfer: {
         productId,
-        quantity,
+        quantity: quantityValue,
         fromLocation: fromLocation.name,
         toLocation: toLocation.name,
         fromLocationId,
-        toLocationId
+        toLocationId,
+        newFromQuantity: fromQuantity - quantityValue,
+        newToQuantity: toQuantity + quantityValue
       }
     });
 
@@ -180,6 +207,16 @@ export async function POST(req) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
+      );
+    }
+
+    
+    if (error.message.includes('Insufficient quantity') || 
+        error.message.includes('decimal places') ||
+        error.message.includes('positive number')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
       );
     }
 
