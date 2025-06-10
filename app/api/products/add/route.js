@@ -43,14 +43,14 @@ export async function POST(request) {
         },
         update: {
           quantity: {
-            increment: numQuantity // Use parseFloat instead of parseInt
+            increment: numQuantity 
           },
           deleted: false,
         },
         create: {
           productId,
           locationId,
-          quantity: numQuantity, // Use parseFloat instead of parseInt
+          quantity: numQuantity, 
         },
       });
 

@@ -249,8 +249,8 @@ export default function AdditionModal({ open, onClose, product = null }) {
           sx={{ mt: 2 }}
           disabled={loading}
           inputProps={{
-            step: "0.01", // Allow decimal input with 2 decimal places
-            min: "0.01"   // Minimum value
+            step: "0.01", 
+            min: "0.01"   
           }}
         />
       </DialogContent>

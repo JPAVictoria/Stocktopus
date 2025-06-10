@@ -43,30 +43,48 @@ export async function POST(request) {
         throw new Error('Product not found at this location');
       }
 
-      const quantityToSubtract = parseInt(quantity);
-      if (productLocation.quantity < quantityToSubtract) {
-        throw new Error(`Cannot subtract ${quantityToSubtract} items. Only ${productLocation.quantity} available.`);
+      
+      const quantityToSubtract = parseFloat(quantity);
+      const currentQuantity = parseFloat(productLocation.quantity);
+      
+      
+      if (!Number.isFinite(quantityToSubtract) || quantityToSubtract <= 0) {
+        throw new Error('Invalid quantity value');
+      }
+      
+      
+      if (quantityToSubtract.toString().split('.')[1]?.length > 2) {
+        throw new Error('Quantity cannot have more than 2 decimal places');
+      }
+      
+      if (currentQuantity < quantityToSubtract) {
+        throw new Error(`Cannot subtract ${quantityToSubtract} items. Only ${currentQuantity} available.`);
       }
 
+      
+      const newQuantity = currentQuantity - quantityToSubtract;
+      
       
       await tx.productLocation.update({
         where: {
           productId_locationId: { productId, locationId },
         },
         data: {
-          quantity: productLocation.quantity - quantityToSubtract,
+          quantity: newQuantity,
         },
       });
 
       
-      const totalQuantity = await tx.productLocation.aggregate({
+      const totalQuantityResult = await tx.productLocation.aggregate({
         where: { productId, deleted: false },
         _sum: { quantity: true },
       });
 
+      const totalQuantity = parseFloat(totalQuantityResult._sum.quantity) || 0;
+
       await tx.product.update({
         where: { id: productId },
-        data: { quantity: totalQuantity._sum.quantity || 0 },
+        data: { quantity: totalQuantity },
       });
 
       
@@ -75,12 +93,22 @@ export async function POST(request) {
         select: { name: true },
       });
 
-      return location?.name;
+      return {
+        locationName: location?.name,
+        subtractedQuantity: quantityToSubtract,
+        newLocationQuantity: newQuantity,
+        newTotalQuantity: totalQuantity
+      };
     });
 
     return NextResponse.json({
       success: true,
-      message: `Successfully subtracted ${quantity} units from ${result}`,
+      message: `Successfully subtracted ${result.subtractedQuantity} units from ${result.locationName}`,
+      data: {
+        subtractedQuantity: result.subtractedQuantity,
+        newLocationQuantity: result.newLocationQuantity,
+        newTotalQuantity: result.newTotalQuantity
+      }
     });
 
   } catch (error) {
@@ -90,7 +118,10 @@ export async function POST(request) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
     
-    if (error.message.includes('Cannot subtract') || error.message.includes('not found')) {
+    if (error.message.includes('Cannot subtract') || 
+        error.message.includes('not found') || 
+        error.message.includes('Invalid quantity') ||
+        error.message.includes('decimal places')) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     

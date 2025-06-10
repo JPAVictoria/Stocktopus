@@ -30,11 +30,11 @@ export default function SubtractModal({ open, onClose, product = null }) {
     try {
       setFetchingLocations(true);
       
-      // For subtract, we only show locations where the product actually exists
+      
       if (product && product.originalData?.locations) {
-        // Filter only locations that have quantity > 0
+        
         const locationsWithStock = product.originalData.locations.filter(
-          loc => loc.quantity > 0 && !loc.deleted
+          loc => parseFloat(loc.quantity) > 0 && !loc.deleted
         );
         setAvailableLocations(locationsWithStock);
       } else {
@@ -68,11 +68,36 @@ export default function SubtractModal({ open, onClose, product = null }) {
     const selectedLocation = availableLocations.find(
       (loc) => loc.locationId === location
     );
-    return selectedLocation?.quantity || 0;
+    return parseFloat(selectedLocation?.quantity) || 0;
+  };
+
+  const formatQuantity = (value) => {
+    
+    const num = parseFloat(value);
+    if (isNaN(num)) return "0";
+    return num % 1 === 0 ? num.toString() : num.toFixed(2).replace(/\.?0+$/, '');
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = e.target.value;
+    
+    
+    if (value === "") {
+      setQuantity("");
+      return;
+    }
+    
+    
+    const decimalRegex = /^\d*\.?\d{0,2}$/;
+    if (decimalRegex.test(value)) {
+      setQuantity(value);
+    }
   };
 
   const handleSubmit = async () => {
-    if (!quantity || quantity <= 0) {
+    const quantityValue = parseFloat(quantity);
+    
+    if (!quantity || quantityValue <= 0 || isNaN(quantityValue)) {
       openSnackbar("Valid quantity is required", "error");
       return;
     }
@@ -83,9 +108,9 @@ export default function SubtractModal({ open, onClose, product = null }) {
     }
 
     const maxAvailable = getMaxQuantityForLocation();
-    if (parseInt(quantity) > maxAvailable) {
+    if (quantityValue > maxAvailable) {
       openSnackbar(
-        `Cannot subtract ${quantity} items. Only ${maxAvailable} available at this location.`,
+        `Cannot subtract ${formatQuantity(quantity)} items. Only ${formatQuantity(maxAvailable)} available at this location.`,
         "error"
       );
       return;
@@ -97,7 +122,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
       const response = await axios.post("/api/products/subtract", {
         productId: product?.id,
         locationId: location,
-        quantity: parseInt(quantity),
+        quantity: quantityValue,
       }, {
         withCredentials: true,
       });
@@ -107,7 +132,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
       );
       
       openSnackbar(
-        `Successfully subtracted ${quantity} units from ${selectedLocation?.location.name}`,
+        `Successfully subtracted ${formatQuantity(quantity)} units from ${selectedLocation?.location.name}`,
         "success"
       );
 
@@ -174,7 +199,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
               Product: {product.name}
             </h4>
             <p className="text-sm text-gray-600">
-              Current Total: {product.totalQuantity}
+              Current Total: {formatQuantity(product.totalQuantity)}
             </p>
           </div>
         )}
@@ -214,7 +239,7 @@ export default function SubtractModal({ open, onClose, product = null }) {
             </MenuItem>
             {availableLocations.map((loc) => (
               <MenuItem key={loc.locationId} value={loc.locationId}>
-                {loc.location.name} (Available: {loc.quantity})
+                {loc.location.name} (Available: {formatQuantity(loc.quantity)})
               </MenuItem>
             ))}
           </Select>
@@ -223,9 +248,9 @@ export default function SubtractModal({ open, onClose, product = null }) {
         <TextField
           fullWidth
           label="Quantity to Subtract"
-          type="number"
+          type="text"
           value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
+          onChange={handleQuantityChange}
           margin="dense"
           size="small"
           sx={{ mt: 2 }}
@@ -233,16 +258,18 @@ export default function SubtractModal({ open, onClose, product = null }) {
           InputProps={{
             style: { color: "#333333" },
             inputProps: {
-              min: 1,
-              max: getMaxQuantityForLocation(),
+              inputMode: "decimal",
+              pattern: "[0-9]*\\.?[0-9]{0,2}",
+              step: "0.01",
             },
           }}
           helperText={
             location
-              ? `Max available: ${getMaxQuantityForLocation()}`
-              : "Select location first"
+              ? `Max available: ${formatQuantity(getMaxQuantityForLocation())} • Supports decimals (e.g., 1.5, 2.25)`
+              : "Select location first • Supports decimals (e.g., 1.5, 2.25)"
           }
           disabled={loading}
+          placeholder="Enter quantity (e.g., 1.5)"
         />
       </DialogContent>
 

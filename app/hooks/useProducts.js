@@ -34,7 +34,7 @@ export const useProducts = (openSnackbar) => {
           id: product.id,
           name: product.name,
           imageUrl: validImageUrl,
-          totalQuantity: parseFloat(totalQuantity.toFixed(2)), // Round to 2 decimal places
+          totalQuantity: parseFloat(totalQuantity.toFixed(2)), 
           location: locationNames || "No location",
           srp: parseFloat(product.price).toFixed(2),
           originalData: product,
