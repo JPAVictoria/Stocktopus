@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { isValidUrl } from '../utils/helpers';
 
-
 export const useProducts = (openSnackbar) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,7 +15,7 @@ export const useProducts = (openSnackbar) => {
 
       const transformedData = response.data.map((product) => {
         const totalQuantity = product.locations.reduce(
-          (sum, loc) => sum + loc.quantity,
+          (sum, loc) => sum + parseFloat(loc.quantity || 0),
           0
         );
         const locationNames = product.locations
@@ -35,9 +34,9 @@ export const useProducts = (openSnackbar) => {
           id: product.id,
           name: product.name,
           imageUrl: validImageUrl,
-          totalQuantity: totalQuantity,
+          totalQuantity: parseFloat(totalQuantity.toFixed(2)), // Round to 2 decimal places
           location: locationNames || "No location",
-          srp: product.price.toFixed(2),
+          srp: parseFloat(product.price).toFixed(2),
           originalData: product,
         };
       });
@@ -45,21 +44,34 @@ export const useProducts = (openSnackbar) => {
       setProducts(transformedData);
     } catch (err) {
       console.error("Error fetching products:", err);
-      
+      if (openSnackbar) {
+        openSnackbar("Failed to fetch products", "error");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const deleteProduct = async (productId) => {
-    await axios.put("/api/products", {
-      id: productId,
-      softDelete: true,
-    });
-    
-    setProducts((prevProducts) => 
-      prevProducts.filter((product) => product.id !== productId)
-    );
+    try {
+      await axios.put("/api/products", {
+        id: productId,
+        softDelete: true,
+      });
+      
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== productId)
+      );
+      
+      if (openSnackbar) {
+        openSnackbar("Product deleted successfully", "success");
+      }
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      if (openSnackbar) {
+        openSnackbar("Failed to delete product", "error");
+      }
+    }
   };
 
   useEffect(() => {

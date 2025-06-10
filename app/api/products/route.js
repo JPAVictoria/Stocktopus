@@ -31,7 +31,6 @@ async function requireAuth() {
   return user;
 }
 
-
 export async function GET(request) {
   try {
     const user = await requireAuth();
@@ -103,14 +102,18 @@ export async function POST(request) {
       );
     }
 
-    if (!quantity || quantity <= 0) {
+    
+    const numQuantity = parseFloat(quantity);
+    if (!quantity || isNaN(numQuantity) || numQuantity <= 0) {
       return NextResponse.json(
         { error: "Valid quantity is required" },
         { status: 400 }
       );
     }
 
-    if (!price || price <= 0) {
+    
+    const numPrice = parseFloat(price);
+    if (!price || isNaN(numPrice) || numPrice <= 0) {
       return NextResponse.json(
         { error: "Valid price is required" },
         { status: 400 }
@@ -160,8 +163,8 @@ export async function POST(request) {
         data: {
           name: name.trim(),
           imageUrl: imageUrl.trim(),
-          quantity: parseInt(quantity),
-          price: parseFloat(price),
+          quantity: numQuantity, 
+          price: numPrice,       
           createdById: user.id,
         },
       });
@@ -170,7 +173,7 @@ export async function POST(request) {
         data: {
           productId: product.id,
           locationId: locationId,
-          quantity: parseInt(quantity),
+          quantity: numQuantity, 
         },
       });
 

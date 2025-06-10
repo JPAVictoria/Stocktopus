@@ -89,11 +89,11 @@ export default function ProductModal({ open, onClose, onSubmit, mode = 'create',
       openSnackbar("Image URL is required", "error");
       return;
     }
-    if (!quantity || quantity <= 0) {
+    if (!quantity || parseFloat(quantity) <= 0) {
       openSnackbar("Valid quantity is required", "error");
       return;
     }
-    if (!price || price <= 0) {
+    if (!price || parseFloat(price) <= 0) {
       openSnackbar("Valid price is required", "error");
       return;
     }
@@ -108,7 +108,7 @@ export default function ProductModal({ open, onClose, onSubmit, mode = 'create',
       const productData = {
         name: name.trim(),
         imageUrl: image.trim(),
-        quantity: parseInt(quantity),
+        quantity: parseFloat(quantity),
         price: parseFloat(price),
         locationId: location,
       };
@@ -215,7 +215,10 @@ export default function ProductModal({ open, onClose, onSubmit, mode = 'create',
           size="small"
           sx={{ mt: 2 }}
           InputLabelProps={{ style: { color: "#333333", fontSize: "14px" } }}
-          InputProps={{ style: { color: "#333333" }, inputProps: { min: 1 } }}
+          InputProps={{ 
+            style: { color: "#333333" }, 
+            inputProps: { min: 0.01, step: 0.01 } 
+          }}
           disabled={loading}
         />
 

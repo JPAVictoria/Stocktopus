@@ -24,7 +24,9 @@ export async function POST(request) {
     
     const { productId, locationId, quantity } = await request.json();
 
-    if (!productId || !locationId || !quantity || quantity <= 0) {
+    const numQuantity = parseFloat(quantity);
+
+    if (!productId || !locationId || !quantity || isNaN(numQuantity) || numQuantity <= 0) {
       return NextResponse.json(
         { error: "Product ID, location ID, and valid quantity are required" },
         { status: 400 }
@@ -41,14 +43,14 @@ export async function POST(request) {
         },
         update: {
           quantity: {
-            increment: parseInt(quantity)
+            increment: numQuantity // Use parseFloat instead of parseInt
           },
           deleted: false,
         },
         create: {
           productId,
           locationId,
-          quantity: parseInt(quantity),
+          quantity: numQuantity, // Use parseFloat instead of parseInt
         },
       });
 

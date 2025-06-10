@@ -97,7 +97,9 @@ export default function AdditionModal({ open, onClose, product = null }) {
   };
 
   const handleSubmit = async () => {
-    if (!quantity || quantity <= 0) {
+    const numQuantity = parseFloat(quantity);
+    
+    if (!quantity || isNaN(numQuantity) || numQuantity <= 0) {
       openSnackbar("Valid quantity is required", "error");
       return;
     }
@@ -114,7 +116,7 @@ export default function AdditionModal({ open, onClose, product = null }) {
       const response = await axios.post("/api/products/add", {
         productId: product?.id,
         locationId: location,
-        quantity: parseInt(quantity),
+        quantity: numQuantity, 
       }, {
         withCredentials: true,
       });
@@ -246,6 +248,10 @@ export default function AdditionModal({ open, onClose, product = null }) {
           size="small"
           sx={{ mt: 2 }}
           disabled={loading}
+          inputProps={{
+            step: "0.01", // Allow decimal input with 2 decimal places
+            min: "0.01"   // Minimum value
+          }}
         />
       </DialogContent>
 
